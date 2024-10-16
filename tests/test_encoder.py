@@ -82,7 +82,7 @@ def cli_encoder(
     command: str = f"{sys.executable} -X utf8 {PARENT_DIR / 'encode.py'}"
     ):
     def encoder(ops):
-        output, result = _output_from_cmd(f"{command} {' '.join(ops)}")
+        output, result = _output_from_cmd(f"{command} {' '.join(f'"{op}"' for op in ops)}")
         result.check_returncode()
         return output
     return encoder
