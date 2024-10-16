@@ -6,7 +6,7 @@ const GetBits = function(x) {
 } 
 
 
-export const MakeEncoderAndDecoder = function(symbols) {
+export const MakeSubByteEncoderAndDecoder = function(symbols) {
 
     const unique_symbols = new Set(symbols);
     const decodings = Array.from(unique_symbols.values());
@@ -91,7 +91,3 @@ export const MakeEncoderAndDecoder = function(symbols) {
     return [encoder, decoder, bits_per_symbol, num_symbols_per_byte];
 }
 
-
-export const [encode_ops, decode_ops, bits_per_op, ops_per_byte] = MakeEncoderAndDecoder(OPS);
-
-export const [encode_seeds, decode_seeds, bits_per_seed, seeds_per_byte] = MakeEncoderAndDecoder(SEEDS);

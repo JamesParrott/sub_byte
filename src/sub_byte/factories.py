@@ -11,7 +11,7 @@ def get_bits(x: int) -> str:
     """ 
     return bin(x).removeprefix('0b')
 
-def make_encoder_and_decoder(symbols: Iterable[Hashable]) -> tuple[Callable, Callable]:
+def make_sub_byte_encoder_and_decoder(symbols: Iterable[Hashable]) -> tuple[Callable, Callable]:
     # TODO: Use new Generics syntax instead of Hashable
     
     # Remove repeated symbols, preserving their order.

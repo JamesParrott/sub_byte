@@ -1,13 +1,6 @@
 import { argv } from 'node:process';
 
-import {encode_ops, encode_seeds} from '../src/sub_byte/codec.mjs';
-
-import SYMBOLS from './symbols.json' with { type: 'json' };
-
-
-const SEEDS = SYMBOLS.SEEDS;
-const UNIQUE_SEEDS = new Set(SYMBOLS.SEEDS.map((x) => x.toString()));
-const OPS = new Set(SYMBOLS.OPS);
+import {OPS, encode_ops, UNIQUE_SEEDS, encode_seeds} from './ops_and_seeds_codecs.mjs';
 
 
 for (const [set, encoder] of [[OPS, encode_ops], [UNIQUE_SEEDS, encode_seeds]]) {

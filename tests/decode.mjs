@@ -1,15 +1,6 @@
 import { argv } from 'node:process';
 
-import {decode_ops, decode_seeds} from '../src/sub_byte/codec.mjs';
-
-
-import SYMBOLS from './symbols.json' with { type: 'json' };
-
-
-const SEEDS = SYMBOLS.SEEDS;
-const UNIQUE_SEEDS = new Set(SYMBOLS.SEEDS.map((x) => x.toString()));
-const OPS = new Set(SYMBOLS.OPS);
-
+import {OPS, decode_ops, UNIQUE_SEEDS, decode_seeds} from './ops_and_seeds_codecs.mjs';
 
 
 const num_symbols = parseInt(argv[2]);
