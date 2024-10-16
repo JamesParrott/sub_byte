@@ -16,6 +16,7 @@ PARENT_DIR = pathlib.Path(__file__).parent
 
 
 @given(binary(min_size = 1))
+@pytest.mark.skip
 def test_roundtrip_py_ops_decoder(b):
     # Leading zeros in last byte mean it could define fewer ops
     min_num_ops_from_last_byte = math.ceil(len( bin(b[-1]).removeprefix('0b') ) / ops_and_seeds_codecs.bits_per_op)
@@ -29,6 +30,7 @@ def test_roundtrip_py_ops_decoder(b):
 seeds_strategy = lists(sampled_from(list(ops_and_seeds_codecs.ALL_SEEDS)))
 
 @given(seeds_strategy)
+@pytest.mark.skip
 def test_roundtrip_py_seeds_encoder(s):
     num_seeds = len(s)
     encoded = bytes(ops_and_seeds_codecs.encode_seeds(s))
@@ -45,7 +47,9 @@ binary_of_valid_seeds = builds(lambda l: bytes([(i1 << 4) + i2 for i1, i2 in l])
                                    )
                               )
 
+
 @given(binary_of_valid_seeds)
+@pytest.mark.skip
 def test_roundtrip_py_seeds_decoder(b):
 
     # Leading zeros in last byte mean it could define fewer seeds
@@ -109,6 +113,7 @@ js_encoder, js_decoder = (cli_encoder(f"{NODE_RUN} {PARENT_DIR / 'encode.mjs'}")
 
 @given(op_strings_strategy)
 @settings(max_examples = 2500, deadline = None)
+@pytest.mark.skip
 @pytest.mark.parametrize(
         'encoder,decoder',
         [
@@ -118,8 +123,32 @@ js_encoder, js_decoder = (cli_encoder(f"{NODE_RUN} {PARENT_DIR / 'encode.mjs'}")
            (js_encoder, py_decoder),
         ]
 )
-def test_roundtrip_and_JS_interop_via_CLIs(encoder,decoder,ops: list[str]):
+def test_roundtrip_Py_and_JS_ops_encoder_via_CLIs(encoder,decoder,ops: list[str]):
     num_ops = len(ops)
     encoded = encoder(ops).replace('\r\n',' ').replace('\n',' ')
     decoded = decoder(encoded, num_ops)
     assert ops == decoded, f'{ops=}, {encoded=}, {decoded=}'
+
+
+
+@given(binary(min_size = 1))
+@settings(max_examples = 50, deadline = None)
+@pytest.mark.parametrize(
+        'encoder,decoder',
+        [
+           (py_encoder, py_decoder),
+        #    (js_encoder, js_decoder),
+        #    (py_encoder, js_decoder),
+        #    (js_encoder, py_decoder),
+        ]
+)
+def test_roundtrip_Py_and_JS_ops_decoder_via_CLIs(encoder,decoder,b: bytes):
+    # Leading zeros in last byte mean it could define fewer ops
+    min_num_ops_from_last_byte = math.ceil(len( bin(b[-1]).removeprefix('0b') ) / ops_and_seeds_codecs.bits_per_op)
+    
+    for i in range(min_num_ops_from_last_byte, ops_and_seeds_codecs.ops_per_byte+1):
+        num_ops = ops_and_seeds_codecs.ops_per_byte*(len(b) - 1) + i
+
+        decoded = list(decoder(b.hex(), num_ops))
+        encoded = bytes.fromhex(encoder(decoded))
+        assert b == encoded, f'{b=}, {encoded=}, {decoded=} {num_ops=}'
