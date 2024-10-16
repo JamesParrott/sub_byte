@@ -5,7 +5,7 @@ from sub_byte import make_sub_byte_encoder_and_decoder
 
 SYMBOLS = json.loads((pathlib.Path(__file__).parent / 'symbols.json').read_text())
 
-ALL_SEEDS = SYMBOLS['SEEDS']
+ALL_SEEDS = [str(seed) for seed in SYMBOLS['SEEDS']]
 OPS = SYMBOLS['OPS']
 
 

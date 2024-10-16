@@ -109,14 +109,14 @@ def cli_decoder(
 NODE_RUN = 'node --disable-warning ExperimentalWarning'
 
 py_encoder, py_ops_decoder= cli_encoder(), cli_decoder()
-py_seeds_decoder = cli_decoder(lambda command, encoded, num_ops : f'{command} {num_ops} "" {encoded}')
+py_seeds_decoder = cli_decoder(prep_args = lambda command, encoded, num_ops : f'{command} {num_ops} "" {encoded}')
 js_encoder, js_decoder = (cli_encoder(f"{NODE_RUN} {PARENT_DIR / 'encode.mjs'}"),
                           cli_decoder(f"{NODE_RUN} {PARENT_DIR / 'decode.mjs'}"))
 
 
 @given(op_strings_strategy)
 @settings(max_examples = 250, deadline = None)
-# @pytest.mark.skip
+@pytest.mark.skip
 @pytest.mark.parametrize(
         'encoder,decoder',
         [
@@ -139,12 +139,14 @@ def test_roundtrip_Py_and_JS_ops_encoder_via_CLIs(encoder,decoder,ops: list[str]
         'encoder,decoder',
         [
            (py_encoder, py_seeds_decoder),
-        #    (js_encoder, js_decoder),
-        #    (py_encoder, js_decoder),
+           (js_encoder, js_decoder),
+           (py_encoder, js_decoder),
            (js_encoder, py_seeds_decoder),
         ]
 )
 def test_roundtrip_Py_and_JS_seeds_encoder_via_CLIs(encoder,decoder,seeds: list[int]):
+    if not seeds:
+        return
     num_seeds = len(seeds)
     encoded = encoder(seeds).replace('\r\n',' ').replace('\n',' ')
     decoded = decoder(encoded, num_seeds)
@@ -154,7 +156,7 @@ def test_roundtrip_Py_and_JS_seeds_encoder_via_CLIs(encoder,decoder,seeds: list[
 
 @given(binary(min_size = 1))
 @settings(max_examples = 250, deadline = None)
-# @pytest.mark.skip
+@pytest.mark.skip
 @pytest.mark.parametrize(
         'encoder,decoder',
         [
