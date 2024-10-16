@@ -93,10 +93,12 @@ def cli_encoder(
 
 
 def cli_decoder(
-    command: str = f"{sys.executable} -X utf8 {PARENT_DIR / 'decode.py'}"
+    command: str = f"{sys.executable} -X utf8 {PARENT_DIR / 'decode.py'}",
+    prep_args = None,
     ):
+    prep_args = prep_args or (lambda command, encoded, num_ops : f"{command} {num_ops} {encoded}")
     def decoder(encoded, num_ops):
-        output, result = _output_from_cmd(f"{command} {num_ops} {encoded}")
+        output, result = _output_from_cmd(prep_args(command, encoded, num_ops))
         result.check_returncode()
         stripped = output.strip()
         if not output:
@@ -106,21 +108,22 @@ def cli_decoder(
 
 NODE_RUN = 'node --disable-warning ExperimentalWarning'
 
-py_encoder, py_decoder = cli_encoder(), cli_decoder()
+py_encoder, py_ops_decoder= cli_encoder(), cli_decoder()
+py_seeds_decoder = cli_decoder(lambda command, encoded, num_ops : f'{command} {num_ops} "" {encoded}')
 js_encoder, js_decoder = (cli_encoder(f"{NODE_RUN} {PARENT_DIR / 'encode.mjs'}"),
                           cli_decoder(f"{NODE_RUN} {PARENT_DIR / 'decode.mjs'}"))
 
 
 @given(op_strings_strategy)
-@settings(max_examples = 2500, deadline = None)
-@pytest.mark.skip
+@settings(max_examples = 250, deadline = None)
+# @pytest.mark.skip
 @pytest.mark.parametrize(
         'encoder,decoder',
         [
-           (py_encoder, py_decoder),
+           (py_encoder, py_ops_decoder),
            (js_encoder, js_decoder),
            (py_encoder, js_decoder),
-           (js_encoder, py_decoder),
+           (js_encoder, py_ops_decoder),
         ]
 )
 def test_roundtrip_Py_and_JS_ops_encoder_via_CLIs(encoder,decoder,ops: list[str]):
@@ -130,16 +133,35 @@ def test_roundtrip_Py_and_JS_ops_encoder_via_CLIs(encoder,decoder,ops: list[str]
     assert ops == decoded, f'{ops=}, {encoded=}, {decoded=}'
 
 
-
-@given(binary(min_size = 1))
-@settings(max_examples = 50, deadline = None)
+@given(seeds_strategy)
+@settings(max_examples = 250, deadline = None)
 @pytest.mark.parametrize(
         'encoder,decoder',
         [
-           (py_encoder, py_decoder),
+           (py_encoder, py_seeds_decoder),
+        #    (js_encoder, js_decoder),
+        #    (py_encoder, js_decoder),
+           (js_encoder, py_seeds_decoder),
+        ]
+)
+def test_roundtrip_Py_and_JS_seeds_encoder_via_CLIs(encoder,decoder,seeds: list[int]):
+    num_seeds = len(seeds)
+    encoded = encoder(seeds).replace('\r\n',' ').replace('\n',' ')
+    decoded = decoder(encoded, num_seeds)
+    assert seeds == decoded, f'{seeds=}, {encoded=}, {decoded=}'
+
+
+
+@given(binary(min_size = 1))
+@settings(max_examples = 250, deadline = None)
+# @pytest.mark.skip
+@pytest.mark.parametrize(
+        'encoder,decoder',
+        [
+           (py_encoder, py_ops_decoder),
            (js_encoder, js_decoder),
            (py_encoder, js_decoder),
-           (js_encoder, py_decoder),
+           (js_encoder, py_ops_decoder),
         ]
 )
 def test_roundtrip_Py_and_JS_ops_decoder_via_CLIs(encoder,decoder,b: bytes):
