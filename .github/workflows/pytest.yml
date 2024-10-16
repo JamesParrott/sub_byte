@@ -1,0 +1,52 @@
+name: Run PyTest 
+
+description: Run the API Fuzz tests using Pytest and Hypothesis
+
+on:
+  push:
+  pull_request:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+
+  run_tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [
+          # "3.9",
+          # "3.10",
+          # "3.11",
+          "3.12",
+          # "3.13.0-rc.2",
+        ]
+        os: [
+          # "macos-latest",
+          "ubuntu-latest",
+          # "ubuntu-24.04",
+          # "windows-latest",
+        ]
+        # include:
+        #   - os: ubuntu-24.04
+        #     python-version: "3.14.0-alpha.0"
+        #   - os: ubuntu-22.04
+        #     python-version: "3.14.0-alpha.0"
+
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install test dependencies
+      run: pip install -r pytest hypothesis
+
+    - name: Install code under test
+      run: pip install -e .
+
+    - name: Run tests
+      working-directory: tests
+      run: pytest
