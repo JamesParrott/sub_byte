@@ -22,7 +22,7 @@ jobs:
           # "3.13.0-rc.2",
         ]
         os: [
-          # "macos-latest",
+          "macos-latest",
           "ubuntu-latest",
           # "ubuntu-24.04",
           # "windows-latest",
@@ -46,6 +46,15 @@ jobs:
 
     - name: Install code under test
       run: pip install -e .
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22.9.0
+
+    - name: Show files in tests dir
+      working-directory: tests
+      shell: bash
+      run: ls -A
 
     - name: Run tests
       working-directory: tests
