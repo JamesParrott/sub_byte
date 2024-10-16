@@ -25,7 +25,7 @@ jobs:
           "macos-latest",
           "ubuntu-latest",
           # "ubuntu-24.04",
-          # "windows-latest",
+          "windows-latest",
         ]
         # include:
         #   - os: ubuntu-24.04
