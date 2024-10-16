@@ -69,7 +69,7 @@ def _output_from_cmd(cmd: str) -> subprocess.CompletedProcess :
                            ,stderr=subprocess.STDOUT
                            ,stdout = subprocess.PIPE
                            # shell needs to be True on Linux, but not on Windows.
-                           ,shell = sys.platform in ('linux',)
+                           ,shell = sys.platform in ('linux', 'darwin')
                            )
     output = result.stdout.decode(encoding = 'utf8')
     return output, result
