@@ -42,7 +42,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install test dependencies
-      run: pip install -r pytest hypothesis
+      run: pip install pytest hypothesis
 
     - name: Install code under test
       run: pip install -e .
