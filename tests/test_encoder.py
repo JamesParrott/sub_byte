@@ -137,9 +137,9 @@ def test_roundtrip_Py_and_JS_ops_encoder_via_CLIs(encoder,decoder,ops: list[str]
         'encoder,decoder',
         [
            (py_encoder, py_decoder),
-        #    (js_encoder, js_decoder),
-        #    (py_encoder, js_decoder),
-        #    (js_encoder, py_decoder),
+           (js_encoder, js_decoder),
+           (py_encoder, js_decoder),
+           (js_encoder, py_decoder),
         ]
 )
 def test_roundtrip_Py_and_JS_ops_decoder_via_CLIs(encoder,decoder,b: bytes):
