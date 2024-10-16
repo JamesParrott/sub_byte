@@ -1,0 +1,24 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sub-byte"
+version = "0.0.0"
+authors = [{name = "James Parrott", email = "james.parrott@proton.me"}]
+description = "Encodes and decodes 2 to 8 small integers per byte (integers x, 0 <= x <=127), or 2 to 8 elements from a given small set (maximum cardinality 128). "
+readme = {file = "README.md", content-type = "text/markdown"}
+requires-python = ">=3.9"
+keywords = ["Encoders", "Serialization"]
+license = {file = "LICENSE.md"}
+classifiers = [
+    "Programming Language :: Python",
+]
+dependencies = []
+
+
+
+
+
+
+
