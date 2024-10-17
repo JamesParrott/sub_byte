@@ -203,3 +203,27 @@ def test_roundtrip_Py_and_JS_ops_decoder_via_CLIs(encoder,decoder,b: bytes):
         decoded = list(decoder(b.hex(), num_ops))
         encoded = bytes.fromhex(encoder(decoded))
         assert b == encoded, f'{b=}, {encoded=}, {decoded=} {num_ops=}'
+
+
+@given(binary_of_valid_seeds)
+@settings(max_examples = 2500, deadline = None)
+@pytest.mark.parametrize(
+        'encoder,decoder',
+        [
+           (py_encoder, py_seeds_decoder),
+           (js_encoder, js_seeds_decoder),
+           (py_encoder, js_seeds_decoder),
+           (js_encoder, py_seeds_decoder),
+        ]
+)
+def test_roundtrip_Py_and_JS_seeds_decoder_via_CLIs(encoder,decoder,b: bytes):
+
+    # Leading zeros in last byte mean it could define fewer seeds
+    min_num_seeds_from_last_byte = math.ceil(len( bin(b[-1]).removeprefix('0b') ) / ops_and_seeds_codecs.bits_per_seed)
+    
+    for i in range(min_num_seeds_from_last_byte, ops_and_seeds_codecs.seeds_per_byte+1):
+        num_seeds = ops_and_seeds_codecs.seeds_per_byte*(len(b) - 1) + i
+
+        decoded = list(decoder(b.hex(), num_seeds))
+        encoded = bytes.fromhex(encoder(decoded))
+        assert b == encoded, f'{b=}, {encoded=}, {decoded=} {num_seeds=}'
