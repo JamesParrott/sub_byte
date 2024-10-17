@@ -53,7 +53,7 @@ export const MakeSubByteEncoderAndDecoder = function(symbols) {
             yield num;
 
 
-            num &
+            // num &
         }
 
     };
