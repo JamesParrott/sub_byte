@@ -27,20 +27,33 @@ export const MakeSubByteEncoderAndDecoder = function(symbols) {
     }
 
     const encoder = function* (symbols_iterator) {
+        // let num = 0;
+        // let bits_used = 0
         for (let result = symbols_iterator.next(); 
              result.done===false;
              result = symbols_iterator.next()) {
             
             let num = encodings[result.value];
+            // num <<= bits_per_symbol;
+            // num += encodings[result.value];
+            // bits_used += bits_per_symbol;
 
             const rest_of_symbols_in_this_byte = symbols_iterator.take(num_symbols_per_byte-1);
+
 
             rest_of_symbols_in_this_byte.forEach((symbol) => {
                 num <<= bits_per_symbol;
                 num += encodings[symbol];
+                // bits_used += bits_per_symbol;
             });
 
+            // bits_used -= 8;
+            // yield num >> bits_used
+            // num = (num << (8 - bits_used)) & 255 
             yield num;
+
+
+            num &
         }
 
     };

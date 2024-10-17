@@ -4,10 +4,10 @@ from collections.abc import Iterable, Sequence, Iterator, Callable, Hashable
 
 
 def get_bits(x: int) -> str:
-    """ E.g. get_bits(13) == '1101' because:
-             x == 13  =>  get_bits()
-             bin(x) == '0b1101'
-             bin(x).removeprefix == '1101'
+    """ E.g. get_bits(13) == '1101' because if:
+             x == 13 (==8+4+1) then:  
+             bin(x) == '0b1101', and:
+             bin(x).removeprefix('0b') == '1101'
     """ 
     return bin(x).removeprefix('0b')
 
