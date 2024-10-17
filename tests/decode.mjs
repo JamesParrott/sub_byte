@@ -22,7 +22,7 @@ const Uint8ArrayFromHexStr=function(hex_str) {
 
 for (const [line, decoder] of [[argv[3], decode_ops], [argv[4], decode_seeds]]) {
     
-    if (line === undefined || line.length === 0) {
+    if (!line.trim()) {
         continue;
     }
 

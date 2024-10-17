@@ -1,7 +1,9 @@
+import functools
 import sys
 import math
 import pathlib
 import subprocess
+from typing import Callable, Iterable
 
 import pytest
 from hypothesis import given, settings
@@ -16,7 +18,6 @@ PARENT_DIR = pathlib.Path(__file__).parent
 
 
 @given(binary(min_size = 1))
-@pytest.mark.skip
 def test_roundtrip_py_ops_decoder(b):
     # Leading zeros in last byte mean it could define fewer ops
     min_num_ops_from_last_byte = math.ceil(len( bin(b[-1]).removeprefix('0b') ) / ops_and_seeds_codecs.bits_per_op)
@@ -30,7 +31,6 @@ def test_roundtrip_py_ops_decoder(b):
 seeds_strategy = lists(sampled_from(list(ops_and_seeds_codecs.ALL_SEEDS)))
 
 @given(seeds_strategy)
-@pytest.mark.skip
 def test_roundtrip_py_seeds_encoder(s):
     num_seeds = len(s)
     encoded = bytes(ops_and_seeds_codecs.encode_seeds(s))
@@ -49,7 +49,6 @@ binary_of_valid_seeds = builds(lambda l: bytes([(i1 << 4) + i2 for i1, i2 in l])
 
 
 @given(binary_of_valid_seeds)
-@pytest.mark.skip
 def test_roundtrip_py_seeds_decoder(b):
 
     # Leading zeros in last byte mean it could define fewer seeds
@@ -64,10 +63,6 @@ def test_roundtrip_py_seeds_decoder(b):
 
 def _output_from_cmd(cmd: str) -> subprocess.CompletedProcess :
 
-    # Python Unicode mode is needed on Windows to pass encoded 
-    # unicode bytes directly into the PIPE on stdout, so that cmd.exe
-    # doesn't mess up the PIPE encodings.  
-    # On other platforms, "-X utf8" could be omitted.
 
     result = subprocess.run(cmd
                            ,stderr=subprocess.STDOUT
@@ -82,23 +77,20 @@ def _output_from_cmd(cmd: str) -> subprocess.CompletedProcess :
 op_strings_strategy = lists(sampled_from(list(ops_and_seeds_codecs.OPS)))
 
 
-def cli_encoder(
-    command: str = f"{sys.executable} -X utf8 {PARENT_DIR / 'encode.py'}"
-    ):
+def cli_encoder(prep_args: Callable[[str], str]):
+    @functools.wraps(prep_args)
     def encoder(ops):
-        output, result = _output_from_cmd(f"{command} {' '.join(f'"{op}"' for op in ops)}")
+        # Quote the args, as one of our ops, *, is a special char in shells, e.g. Bash. 
+        output, result = _output_from_cmd(prep_args(' '.join(f'"{op}"' for op in ops)))
         result.check_returncode()
         return output
     return encoder
 
 
-def cli_decoder(
-    command: str = f"{sys.executable} -X utf8 {PARENT_DIR / 'decode.py'}",
-    prep_args = None,
-    ):
-    prep_args = prep_args or (lambda command, encoded, num_ops : f"{command} {num_ops} {encoded}")
+def cli_decoder(prep_args: Callable[[str, int], str]):
+    @functools.wraps(prep_args)
     def decoder(encoded, num_ops):
-        output, result = _output_from_cmd(prep_args(command, encoded, num_ops))
+        output, result = _output_from_cmd(prep_args(encoded, num_ops))
         result.check_returncode()
         stripped = output.strip()
         if not output:
@@ -106,23 +98,59 @@ def cli_decoder(
         return stripped.split()
     return decoder
 
-NODE_RUN = 'node --disable-warning ExperimentalWarning'
+# Python Unicode mode is needed on Windows to pass encoded 
+# unicode bytes directly into the PIPE on stdout, so that cmd.exe
+# doesn't mess up the PIPE encodings.  
+# On other platforms, "-X utf8" could be omitted.
+RUN_PY = f"{sys.executable} -X utf8"
 
-py_encoder, py_ops_decoder= cli_encoder(), cli_decoder()
-py_seeds_decoder = cli_decoder(prep_args = lambda command, encoded, num_ops : f'{command} {num_ops} "" {encoded}')
-js_encoder, js_decoder = (cli_encoder(f"{NODE_RUN} {PARENT_DIR / 'encode.mjs'}"),
-                          cli_decoder(f"{NODE_RUN} {PARENT_DIR / 'decode.mjs'}"))
+# Support for direct import of json files is currently experimental
+# in node (ops_and_seeds_codecs.mjs imports symbols.json).
+RUN_NODE = 'node --disable-warning ExperimentalWarning'
+
+
+@cli_encoder
+def py_encoder(args: str):
+    return f'{RUN_PY} {PARENT_DIR / "encode.py"} {args}'
+
+@cli_decoder
+def py_ops_decoder(encoded_ops: str, # A hex string
+                   num_symbols: int,
+                  ):
+    return f'{RUN_PY} {PARENT_DIR / "decode.py"} {num_symbols} {encoded_ops}'
+
+@cli_decoder
+def py_seeds_decoder(encoded_seeds: str, # A hex string
+                     num_symbols: int,
+                     ):
+    return f'{RUN_PY} {PARENT_DIR / "decode.py"} {num_symbols} " " {encoded_seeds}'
+
+@cli_encoder
+def js_encoder(args: str):
+    return f'{RUN_NODE} {PARENT_DIR / "encode.mjs"} {args}'
+
+@cli_decoder
+def js_ops_decoder(encoded_ops: str, # A hex string
+                   num_symbols: int,
+                   ): 
+    return f'{RUN_NODE} {PARENT_DIR / "decode.mjs"} {num_symbols} {encoded_ops}'
+
+@cli_decoder
+def js_seeds_decoder(encoded_seeds: str, # A hex string
+                     num_symbols: int,
+                     ): 
+    return f'{RUN_NODE} {PARENT_DIR / "decode.mjs"} {num_symbols} " " {encoded_seeds}'
+
 
 
 @given(op_strings_strategy)
-@settings(max_examples = 250, deadline = None)
-@pytest.mark.skip
+@settings(max_examples = 2500, deadline = None)
 @pytest.mark.parametrize(
         'encoder,decoder',
         [
            (py_encoder, py_ops_decoder),
-           (js_encoder, js_decoder),
-           (py_encoder, js_decoder),
+           (js_encoder, js_ops_decoder),
+           (py_encoder, js_ops_decoder),
            (js_encoder, py_ops_decoder),
         ]
 )
@@ -134,13 +162,13 @@ def test_roundtrip_Py_and_JS_ops_encoder_via_CLIs(encoder,decoder,ops: list[str]
 
 
 @given(seeds_strategy)
-@settings(max_examples = 250, deadline = None)
+@settings(max_examples = 2500, deadline = None)
 @pytest.mark.parametrize(
         'encoder,decoder',
         [
            (py_encoder, py_seeds_decoder),
-           (js_encoder, js_decoder),
-           (py_encoder, js_decoder),
+           (js_encoder, js_seeds_decoder),
+           (py_encoder, js_seeds_decoder),
            (js_encoder, py_seeds_decoder),
         ]
 )
@@ -155,14 +183,13 @@ def test_roundtrip_Py_and_JS_seeds_encoder_via_CLIs(encoder,decoder,seeds: list[
 
 
 @given(binary(min_size = 1))
-@settings(max_examples = 250, deadline = None)
-@pytest.mark.skip
+@settings(max_examples = 2500, deadline = None)
 @pytest.mark.parametrize(
         'encoder,decoder',
         [
            (py_encoder, py_ops_decoder),
-           (js_encoder, js_decoder),
-           (py_encoder, js_decoder),
+           (js_encoder, js_ops_decoder),
+           (py_encoder, js_ops_decoder),
            (js_encoder, py_ops_decoder),
         ]
 )
