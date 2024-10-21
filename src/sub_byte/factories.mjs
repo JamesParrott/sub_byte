@@ -23,11 +23,23 @@ export class IntegerWidthsInCycle {
 };
 
 
-const cycle = function*(items) {
+const cycle = function* (items) {
     while (true) {
         for (const item of items) {
             yield item;
         }
+    }
+}
+
+const first_N_items = function* (iterable, N) {
+    
+    let num_items_yielded = 0;
+    for (const item of iterable) {
+        if (num_items_yielded >= N) {
+            break;
+        }
+        yield item;
+        num_items_yielded++;
     }
 }
 
@@ -40,10 +52,10 @@ const getBitWidth = function(bit_widths) {
 
 const getN1Bits = function(N) {
     // e.g. getN1Bits(8) === 0b11111111 === 255
-    return ((1 << (N + 1)) -1);
+    return (1 << N) -1;
 }
 
-const intEncoder = function* (integers, uint_bit_widths) {
+export const intEncoder = function* (integers, uint_bit_widths) {
 
     // If uint_bit_widths is an iterable that is not a container, e.g.
     // a once only iterator from a generator, it must yield the 
@@ -91,13 +103,14 @@ const intEncoder = function* (integers, uint_bit_widths) {
     // Clear the buffer of any encoded integers, that were too few 
     // to completely fill a whole byte.
     if (bits_used >= 1) {
-        yield buffer;
+        // left shift the data to start from the highest order bits (no leading zeros)
+        yield buffer << (8 - bits_used);
     }
 
 };
 
 
-const int_decoder = function* (encoded, uint_bit_widths, num_symbols) {
+export const intDecoder = function* (encoded, num_ints, uint_bit_widths) {
 
     // If uint_bit_widths is an 
     // iterable that is not a container, e.g.
@@ -105,7 +118,7 @@ const int_decoder = function* (encoded, uint_bit_widths, num_symbols) {
     // widths yielded, must be >= (8 * the number of bytes from encoded)  
     // i.e. as for int_encoder above, the caller must handle cacheing 
     // of bit widths (or repeating them without cacheing).
-    const bit_widths = cycle(uint_bit_widths);
+    const bit_widths = first_N_items(cycle(uint_bit_widths), num_ints);
     const bytes = encoded?.[Symbol.iterator]() || encoded;
 
     // Initialise a buffer (an ordinary Number) 
@@ -114,11 +127,12 @@ const int_decoder = function* (encoded, uint_bit_widths, num_symbols) {
     let buffer_width_in_bits = 0;
     let i=0;
 
-    let uint_bit_width=getBitWidth(bit_widths,"No items yet. ", i);
+    let j=0;
+
+    let uint_bit_width=getBitWidth(bit_widths,"'No bytes read yet. '", i);
     
 
     for (const byte of bytes) {
-
         // Left shift 8 bits to make room for byte
         buffer <<= 8;
         // Bump counter by 8
@@ -138,7 +152,7 @@ const int_decoder = function* (encoded, uint_bit_widths, num_symbols) {
             // before the previous line.
             const mask = getN1Bits(uint_bit_width);
             yield (buffer >> buffer_width_in_bits) & mask;
-            
+            j++;
             // Clear buffer of the bits that made up the yielded integer
             // (the left most uint_bit_width bits)
             buffer &= getN1Bits(buffer_width_in_bits);
@@ -148,7 +162,7 @@ const int_decoder = function* (encoded, uint_bit_widths, num_symbols) {
 
         if (uint_bit_width === 0) {
 
-            if (buffer_width_in_bits >= 1) {
+            if (buffer_width_in_bits >= 1 && j < num_ints) {
                 throw new Error(`Not enough uint bit widths to decode remaining bits ${buffer_width_in_bits} with.`)
             }
 
