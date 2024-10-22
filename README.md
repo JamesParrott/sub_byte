@@ -3,7 +3,7 @@ Encodes and decodes 2 to 8 small integers x per byte, or 2 to 8 elements from a 
  0 <= x <=127 (with a maximum cardinality of 128).
 
 ## Overview
-Sub byte crams as many symbols into each Byte as possible, but does not merge bytes into byte streams.
+Sub byte crams as many symbols into each Byte as possible, crossing byte boundaries if necessary.
 
 ## Alternatives
 
