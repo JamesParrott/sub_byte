@@ -2,7 +2,7 @@ import { describe, it } from "node:test";
 
 import assert from "node:assert";
 
-import { intEncoder, intDecoder } from "../src/subByte/factories.mjs";
+import { intEncoder, intDecoder } from "../src/sub_byte/factories.mjs";
 
 function randInt(x) {
   return Math.floor(Math.random() * x);

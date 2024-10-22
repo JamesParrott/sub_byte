@@ -1,6 +1,6 @@
 import SYMBOLS from "./symbols.json"; //with { type: "json" };
 
-import { MakeSubByteEncoderAndDecoder } from "../src/subByte/factories.mjs";
+import { MakeSubByteEncoderAndDecoder } from "../src/sub_byte/factories.mjs";
 
 const ALL_SEEDS = SYMBOLS.SEEDS;
 
