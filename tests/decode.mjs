@@ -1,9 +1,6 @@
 import { argv } from "node:process";
 
-import {
-  decodeOps,
-  decodeSeeds,
-} from "./ops_andSeeds_codecs.mjs";
+import { decodeOps, decodeSeeds } from "./ops_andSeeds_codecs.mjs";
 
 const numSymbols = parseInt(argv[2]);
 

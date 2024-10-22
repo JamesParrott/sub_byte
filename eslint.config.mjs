@@ -5,8 +5,8 @@ export default [
   { languageOptions: { globals: globals.browser } },
   pluginJs.configs.recommended,
   {
-      rules: {
-          camelcase : "error",
-      },
+    rules: {
+      camelcase: "error",
+    },
   },
 ];

@@ -1,4 +1,4 @@
-import SYMBOLS from "./symbols.json" //with { type: "json" };
+import SYMBOLS from "./symbols.json"; //with { type: "json" };
 
 import { MakeSubByteEncoderAndDecoder } from "../src/subByte/factories.mjs";
 
