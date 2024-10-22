@@ -12,15 +12,15 @@ export class ValueSet extends Set {
 
 
 
-export class IntegerWidthsInCycle {
-    constructor() {
+// export class IntegerWidthsInCycle {
+//     constructor() {
 
 
-    };
-    static FromMaximumIntegers(max_ints) {
+//     };
+//     static FromMaximumIntegers(max_ints) {
 
-    };
-};
+//     };
+// };
 
 
 const cycle = function* (items) {
@@ -174,39 +174,40 @@ export const intDecoder = function* (encoded, num_ints, uint_bit_widths) {
 }
 
 
+const getBitWidthsIntEncodingsAndDecodings
+
+
 const MakeSubByteEncoderAndDecoder = function(value_sets) {
 
-    const unique_symbols = new Set(symbols);
-    if (unique_symbols.size <= 1) {
-        throw new Error('All symbols are the same, or no symbols have been given.'
-                       +`Set(symbols): ${unique_symbols}` 
-                       );
+    const bit_widths = [];
+    const decodings = [];
+    const encodings = [];
+
+    for (const value_set of value_sets) {
+        const unique_symbols = new Set(value_set);
+        if (unique_symbols.size <= 1) {
+            throw new Error('All symbols are the same, or no symbols have been given.'
+                           +`Value set: ${value_set}` 
+                           );
+        }
+
+        const bit_width = GetBits(unique_symbols.size - 1).length;
+        bit_widths.push(bit_width);
+
+        const decoding = Array.from(unique_symbols.values());
+        decodings.push(decoding);
+
+        const encoding = Object.fromEntries(decoding.entries().map(([i,s]) => [s,i]));
+        encodings.push(encoding);
     }
-    const decodings = Array.from(unique_symbols.values());
-
-    const encodings = Object.fromEntries(decodings.entries().map(([i,s]) => [s,i]));
-
-    const bits_per_symbol = GetBits(unique_symbols.size - 1).length;
-
-    
-    if (bits_per_symbol <= 0) {
-        throw new Error(`Internal error: bits per symbol: ${bits_per_symbol}. `
-                       +`Unique symbols: ${unique_symbols}` 
-                       +'The symbols given each require zero bits to encode.'
-                       );
-    }
-
-    const num_symbols_per_byte = Math.floor(8 / bits_per_symbol);
 
 
 
     const encoder = function* (symbols_data) {
 
-        // If symbols doesn't have Symbol.iterator, just try to
-        // use symbols.
+        const encodings_iterator = cycle(encodings);
 
-        // Deal with bit_widths?  
-        for (const byte of intEncoder(symbols_data.map((x) => encodings[x]))) {
+        for (const byte of intEncoder(symbols_data.map((x) => encodings_iterator.next().value[x]), bit_widths)) {
             yield byte;
         }
 
@@ -214,28 +215,6 @@ const MakeSubByteEncoderAndDecoder = function(value_sets) {
 
     let masks_and_offsets = [];
 
-    for (let j=0; j < num_symbols_per_byte; j++) {
-        
-        const num_zeros_to_prepad = bits_per_symbol * j;
-        const num_zeros_to_postpad = 8 - num_zeros_to_prepad - bits_per_symbol;
-
-        if (num_zeros_to_prepad + bits_per_symbol + num_zeros_to_postpad != 8) {
-            throw new Error('Internal calculation of padding bits within byte error: '
-                  +`${num_zeros_to_prepad}, ${bits_per_symbol}, ${num_zeros_to_postpad}`);
-        }
-
-        const byte_mask_bit_chars = `${'0'.repeat(num_zeros_to_prepad)}${'1'.repeat(bits_per_symbol)}${'0'.repeat(num_zeros_to_postpad)}`;
-
-        if (byte_mask_bit_chars.length != 8) {
-            throw new Error(`Byte bit mask not length 8 (should contain 8 1s or 0s): ${byte_mask_bit_chars}`);
-        }
-
-        
-        const byte_mask = parseInt(byte_mask_bit_chars, 2);
-
-        masks_and_offsets.push([byte_mask, num_zeros_to_postpad]);
-
-    }
     
     const decoder = function* (encoded, num_symbols) {
         let masks_and_offsets_ = masks_and_offsets;
@@ -255,7 +234,7 @@ const MakeSubByteEncoderAndDecoder = function(value_sets) {
         }
     }
 
-    return [encoder, decoder, bits_per_symbol, num_symbols_per_byte];
+    return [encoder, decoder, bit_widths, ];
 }
 
 export default MakeSubByteEncoderAndDecoder;
