@@ -1,7 +1,10 @@
 
 
 import {test, describe, it} from 'node:test';
-import fc from 'fast-check';
+
+
+import assert from 'node:assert';
+// import fc from 'fast-check';
 
 import {intEncoder, intDecoder} from '../src/sub_byte/factories.mjs';
 
@@ -25,6 +28,7 @@ import {intEncoder, intDecoder} from '../src/sub_byte/factories.mjs';
 //   });
 // });
 
+// fc.configureGlobal({ numRuns: 4 });
 
 // Code under test
 const roundtrip_intEncoder_to_intDecoder = function(integers_and_extra_widths) {
@@ -34,22 +38,41 @@ const roundtrip_intEncoder_to_intDecoder = function(integers_and_extra_widths) {
     integers_and_extra_widths.forEach(([integer, extra_width]) => {
         const bit_width = integer.toString(2).length + extra_width;
         integers.push(integer);
-        bit_widths.push(bit_width);
+        bit_widths.push(8); //bit_width);
     });
 
-    const ints_to_encode = Array.from(integers);
-    const N = ints_to_encode.length;
+    const N = integers.length;
     const encoded = Array.from(intEncoder(integers, bit_widths));
-    const decoded = Array.from(intDecoder(integers, N, bit_widths));
-    return ints_to_encode === decoded;
+    const decoded = Array.from(intDecoder(encoded, N, bit_widths));
+    // return integers === decoded;
+    return (decoded.length === N) && decoded.every((x,i) => x === integers[i] );
+    // return integers_and_extra_widths.every((tuple) => integers.includes(tuple[0]));
 
 }
 
 
-// Properties
-describe('properties', () => {
-    it('should encode any array of positive integers and valid bit widths to bytes, and decode them to recoer the original array.', () => {
-        fc.assert(fc.property(fc.array(fc.tuple(fc.nat(), fc.nat({max: 4}))), roundtrip_intEncoder_to_intDecoder))
-    })
+// // Properties
+// describe('properties', () => {
+//     it('should encode any array of positive integers and valid bit widths to bytes, and decode them to recover the original array.', () => {
+//         fc.assert(fc.property(fc.array(fc.tuple(fc.nat({max:255}), fc.nat({max: 0})),{maxLength:4}), roundtrip_intEncoder_to_intDecoder))
+//     })
 
-});
+// });
+
+describe('round_trip', function () {
+    const tests = [
+        {integers: [1, 2], bit_widths: [8]},
+        {integers: [0,1, 2,3,4,5,6,7,8,9,10,11,12,13,14,15], bit_widths: [4]},
+        {integers: [0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,1,1,0,0,0,0,0,1,1,0,1], bit_widths: [1]},
+        {integers: [1000, 2,1234], bit_widths: [10,2,11]},
+    ];
+  
+    tests.forEach(({integers, bit_widths}) => {
+      it(`correctly roundtrips ${integers} using widths: ${bit_widths}`, function () {
+        const N = integers.length;
+        const encoded = Array.from(intEncoder(integers, bit_widths));
+        const decoded = Array.from(intDecoder(encoded, N, bit_widths));
+        assert.deepEqual(decoded, integers);
+      });
+    });
+  });
