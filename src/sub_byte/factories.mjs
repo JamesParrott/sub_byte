@@ -174,10 +174,7 @@ export const intDecoder = function* (encoded, num_ints, uint_bit_widths) {
 }
 
 
-const getBitWidthsIntEncodingsAndDecodings
-
-
-const MakeSubByteEncoderAndDecoder = function(value_sets) {
+const getBitWidthsEncodingsAndDecodings = function(value_sets) {
 
     const bit_widths = [];
     const decodings = [];
@@ -201,40 +198,53 @@ const MakeSubByteEncoderAndDecoder = function(value_sets) {
         encodings.push(encoding);
     }
 
+    return [bit_widths, encodings, decodings];
+}
 
 
-    const encoder = function* (symbols_data) {
+const mapSymbolsToIntegers = function*(symbols, encodings) {
 
-        const encodings_iterator = cycle(encodings);
+    const encodings_iterator = cycle(encodings);
 
-        for (const byte of intEncoder(symbols_data.map((x) => encodings_iterator.next().value[x]), bit_widths)) {
+    for (const symbol of symbols) {
+        const encoding = encodings_iterator.next().value;
+        yield encoding[symbol];
+    }
+}
+
+const mapIntegersToSymbols = function*(integers, decodings) {
+
+    const decodings_iterator = cycle(decodings);
+
+    for (const integer of integers) {
+        const decoding = decodings_iterator.next().value;
+        yield decoding[integer];
+    }
+}
+
+
+const MakeSubByteEncoderAndDecoder = function(value_sets) {
+
+
+    const [bit_widths, encodings, decodings] = getBitWidthsEncodingsAndDecodings(value_sets);
+
+    const encoder = function* (symbols) {
+        for (const byte of intEncoder(mapSymbolsToIntegers(symbols, encodings), bit_widths)) {
             yield byte;
         }
-
     };
-
-    let masks_and_offsets = [];
 
     
     const decoder = function* (encoded, num_symbols) {
-        let masks_and_offsets_ = masks_and_offsets;
-        for (const byte of encoded) {
-            if (num_symbols < num_symbols_per_byte) {
-                masks_and_offsets_ = masks_and_offsets.slice(-num_symbols);
-            }
-            for (const [mask, num_trailing_zeros] of masks_and_offsets_) {
-                const index = (mask & byte) >> num_trailing_zeros;
-                yield decodings[index]; 
-                num_symbols -= 1;
-            }
 
-            if (num_symbols <= 0) {
-                return;
-            }
+
+        const symbols = mapIntegersToSymbols(intDecoder(encoded, num_symbols, bit_widths), decodings);
+        for (const symbol of symbols) {
+            yield symbol;
         }
     }
 
-    return [encoder, decoder, bit_widths, ];
+    return [encoder, decoder, bit_widths, encodings, decodings];
 }
 
 export default MakeSubByteEncoderAndDecoder;

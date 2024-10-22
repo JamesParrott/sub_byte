@@ -1,9 +1,7 @@
 import { argv } from "node:process";
 
 import {
-  OPS,
   decode_ops,
-  UNIQUE_SEEDS,
   decode_seeds,
 } from "./ops_and_seeds_codecs.mjs";
 
