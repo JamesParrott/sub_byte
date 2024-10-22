@@ -31,21 +31,21 @@ const cycle = function* (items) {
     }
 }
 
-const first_N_items = function* (iterable, N) {
+const firstNItems = function* (iterable, N) {
     
-    let num_items_yielded = 0;
+    let numItemsYielded = 0;
     for (const item of iterable) {
-        if (num_items_yielded >= N) {
+        if (numItemsYielded >= N) {
             break;
         }
         yield item;
-        num_items_yielded++;
+        numItemsYielded++;
     }
 }
 
-const getBitWidth = function(bit_widths) {
+const getBitWidth = function(bitWidths) {
     
-    const result = bit_widths.next();
+    const result = bitWidths.next();
 
     return result.done ? 0 : result.value;
 }
@@ -55,46 +55,46 @@ const getN1Bits = function(N) {
     return (1 << N) -1;
 }
 
-export const intEncoder = function* (integers, uint_bit_widths) {
+export const intEncoder = function* (integers, uintBitWidths) {
 
-    // If uint_bit_widths is an iterable that is not a container, e.g.
+    // If uintBitWidths is an iterable that is not a container, e.g.
     // a once only iterator from a generator, it must yield the 
     // same number of items or more, than the number of integers.  
     // i.e. the caller must handle cacheing of bit widths (or 
     // repeating without cacheing).
-    const bit_widths = cycle(uint_bit_widths);
+    const bitWidths = cycle(uintBitWidths);
 
     // Initialise a buffer (an ordinary Number) 
     // and a bit counter.
     let buffer = 0;
-    let bits_used = 0;
+    let bitsUsed = 0;
     let i=0;
 
 
     for (const integer of integers) {
-        const bit_width = getBitWidth(bit_widths, integer, i);
+        const bitWidth = getBitWidth(bitWidths, integer, i);
 
 
-        if (bit_width === 0) {
+        if (bitWidth === 0) {
             throw new Error(`No bit width specified for integer: ${integer},  number: ${i}`);
         }
         
         // Left bitshift to make room for next integer, add it in and bump the bit counter.
-        buffer <<= bit_width;
+        buffer <<= bitWidth;
         buffer |= integer;
-        bits_used += bit_width;
+        bitsUsed += bitWidth;
 
 
         // Yield encoded bytes from the buffer
-        while (bits_used >= 8) {
+        while (bitsUsed >= 8) {
             // subtract bits to be yielded from counter, and yield them
-            bits_used -= 8;
-            yield (buffer >> bits_used) & getN1Bits(8);
+            bitsUsed -= 8;
+            yield (buffer >> bitsUsed) & getN1Bits(8);
         }
 
-        // Clear buffer of yielded bytes (only keep bits_used bits).
-        buffer = buffer & getN1Bits(bits_used);
-        // ((1 << (bits_used + 1)) -1);
+        // Clear buffer of yielded bytes (only keep bitsUsed bits).
+        buffer = buffer & getN1Bits(bitsUsed);
+        // ((1 << (bitsUsed + 1)) -1);
 
 
         i++;
@@ -102,68 +102,68 @@ export const intEncoder = function* (integers, uint_bit_widths) {
 
     // Clear the buffer of any encoded integers, that were too few 
     // to completely fill a whole byte.
-    if (bits_used >= 1) {
+    if (bitsUsed >= 1) {
         // left shift the data to start from the highest order bits (no leading zeros)
-        yield buffer << (8 - bits_used);
+        yield buffer << (8 - bitsUsed);
     }
 
 };
 
 
-export const intDecoder = function* (encoded, num_ints, uint_bit_widths) {
+export const intDecoder = function* (encoded, numInts, uintBitWidths) {
 
-    // If uint_bit_widths is an 
+    // If uintBitWidths is an 
     // iterable that is not a container, e.g.
     // a once only iterator from a generator, the total of all its 
     // widths yielded, must be >= (8 * the number of bytes from encoded)  
     // i.e. as for int_encoder above, the caller must handle cacheing 
     // of bit widths (or repeating them without cacheing).
-    const bit_widths = first_N_items(cycle(uint_bit_widths), num_ints);
+    const bitWidths = firstNItems(cycle(uintBitWidths), numInts);
     const bytes = encoded?.[Symbol.iterator]() || encoded;
 
     // Initialise a buffer (an ordinary Number) 
     // and a bit counter.
     let buffer = 0;
-    let buffer_width_in_bits = 0;
+    let bufferWidthInBits = 0;
     let i=0;
 
     let j=0;
 
-    let uint_bit_width=getBitWidth(bit_widths,"'No bytes read yet. '", i);
+    let uintBitWidth=getBitWidth(bitWidths,"'No bytes read yet. '", i);
     
 
     for (const byte of bytes) {
         // Left shift 8 bits to make room for byte
         buffer <<= 8;
         // Bump counter by 8
-        buffer_width_in_bits += 8;
+        bufferWidthInBits += 8;
         // Add in byte to buffer
         buffer |= byte;
 
 
-        if (buffer_width_in_bits < uint_bit_width) {
+        if (bufferWidthInBits < uintBitWidth) {
             continue;
         }
         
-        while (buffer_width_in_bits >= uint_bit_width && uint_bit_width > 0) {
-            buffer_width_in_bits -= uint_bit_width;
-            // mask is uint_bit_width 1s followed by buffer_width_in_bits 0s up 
-            // the same total width as the original value of buffer_width_in_bits
+        while (bufferWidthInBits >= uintBitWidth && uintBitWidth > 0) {
+            bufferWidthInBits -= uintBitWidth;
+            // mask is uintBitWidth 1s followed by bufferWidthInBits 0s up 
+            // the same total width as the original value of bufferWidthInBits
             // before the previous line.
-            const mask = getN1Bits(uint_bit_width);
-            yield (buffer >> buffer_width_in_bits) & mask;
+            const mask = getN1Bits(uintBitWidth);
+            yield (buffer >> bufferWidthInBits) & mask;
             j++;
             // Clear buffer of the bits that made up the yielded integer
-            // (the left most uint_bit_width bits)
-            buffer &= getN1Bits(buffer_width_in_bits);
+            // (the left most uintBitWidth bits)
+            buffer &= getN1Bits(bufferWidthInBits);
 
-            uint_bit_width=getBitWidth(bit_widths, byte, i);
+            uintBitWidth=getBitWidth(bitWidths, byte, i);
         }
 
-        if (uint_bit_width === 0) {
+        if (uintBitWidth === 0) {
 
-            if (buffer_width_in_bits >= 1 && j < num_ints) {
-                throw new Error(`Not enough uint bit widths to decode remaining bits ${buffer_width_in_bits} with.`)
+            if (bufferWidthInBits >= 1 && j < numInts) {
+                throw new Error(`Not enough uint bit widths to decode remaining bits ${bufferWidthInBits} with.`)
             }
 
             break;
@@ -174,77 +174,77 @@ export const intDecoder = function* (encoded, num_ints, uint_bit_widths) {
 }
 
 
-const getBitWidthsEncodingsAndDecodings = function(value_sets) {
+const getBitWidthsEncodingsAndDecodings = function(valueSets) {
 
-    const bit_widths = [];
+    const bitWidths = [];
     const decodings = [];
     const encodings = [];
 
-    for (const value_set of value_sets) {
-        const unique_symbols = new Set(value_set);
-        if (unique_symbols.size <= 1) {
+    for (const valueSet of valueSets) {
+        const uniqueSymbols = new Set(valueSet);
+        if (uniqueSymbols.size <= 1) {
             throw new Error('All symbols are the same, or no symbols have been given.'
-                           +`Value set: ${value_set}` 
+                           +`Value set: ${valueSet}` 
                            );
         }
 
-        const bit_width = GetBits(unique_symbols.size - 1).length;
-        bit_widths.push(bit_width);
+        const bitWidth = GetBits(uniqueSymbols.size - 1).length;
+        bitWidths.push(bitWidth);
 
-        const decoding = Array.from(unique_symbols.values());
+        const decoding = Array.from(uniqueSymbols.values());
         decodings.push(decoding);
 
         const encoding = Object.fromEntries(decoding.entries().map(([i,s]) => [s,i]));
         encodings.push(encoding);
     }
 
-    return [bit_widths, encodings, decodings];
+    return [bitWidths, encodings, decodings];
 }
 
 
 const mapSymbolsToIntegers = function*(symbols, encodings) {
 
-    const encodings_iterator = cycle(encodings);
+    const encodingsIterator = cycle(encodings);
 
     for (const symbol of symbols) {
-        const encoding = encodings_iterator.next().value;
+        const encoding = encodingsIterator.next().value;
         yield encoding[symbol];
     }
 }
 
 const mapIntegersToSymbols = function*(integers, decodings) {
 
-    const decodings_iterator = cycle(decodings);
+    const decodingsIterator = cycle(decodings);
 
     for (const integer of integers) {
-        const decoding = decodings_iterator.next().value;
+        const decoding = decodingsIterator.next().value;
         yield decoding[integer];
     }
 }
 
 
-const MakeSubByteEncoderAndDecoder = function(value_sets) {
+const MakeSubByteEncoderAndDecoder = function(valueSets) {
 
 
-    const [bit_widths, encodings, decodings] = getBitWidthsEncodingsAndDecodings(value_sets);
+    const [bitWidths, encodings, decodings] = getBitWidthsEncodingsAndDecodings(valueSets);
 
     const encoder = function* (symbols) {
-        for (const byte of intEncoder(mapSymbolsToIntegers(symbols, encodings), bit_widths)) {
+        for (const byte of intEncoder(mapSymbolsToIntegers(symbols, encodings), bitWidths)) {
             yield byte;
         }
     };
 
     
-    const decoder = function* (encoded, num_symbols) {
+    const decoder = function* (encoded, numSymbols) {
 
 
-        const symbols = mapIntegersToSymbols(intDecoder(encoded, num_symbols, bit_widths), decodings);
+        const symbols = mapIntegersToSymbols(intDecoder(encoded, numSymbols, bitWidths), decodings);
         for (const symbol of symbols) {
             yield symbol;
         }
     }
 
-    return [encoder, decoder, bit_widths, encodings, decodings];
+    return [encoder, decoder, bitWidths, encodings, decodings];
 }
 
 export default MakeSubByteEncoderAndDecoder;
