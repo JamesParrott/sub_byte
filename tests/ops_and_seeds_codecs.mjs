@@ -10,7 +10,7 @@ const ALL_SEEDS = SYMBOLS.SEEDS;
 export const UNIQUE_SEEDS = new Set(SYMBOLS.SEEDS.map((x) => x.toString()));
 export const OPS = new Set(SYMBOLS.OPS);
 
-export const [encodeOps, decodeOps, bitsPerOp, numOpsPerByte] =
+export const [encodeOps, decodeOps, opsBitWidths, opsEncodings, opsDecodings] =
   MakeSubByteEncoderAndDecoder(OPS);
-export const [encodeSeeds, decodeSeeds, bitsPerSeed, numSeedsPerByte] =
+export const [encodeSeeds, decodeSeeds, seedsBitWidths, seedsEncodings, seedsDecodings] =
   MakeSubByteEncoderAndDecoder(ALL_SEEDS);
