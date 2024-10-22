@@ -1,6 +1,5 @@
 # Sub Byte
-Encodes and decodes 2 to 8 small integers x per byte, or 2 to 8 elements from a given small set s.  Possibly advantageous for
- 0 <= x <=127 (with a maximum cardinality of 128).
+Encodes and decodes sequences of integers with known widths, and sequences of symbols equivalent to integers under some mapping.
 
 ## Overview
 Sub byte crams as many symbols into each Byte as possible, crossing byte boundaries if necessary.

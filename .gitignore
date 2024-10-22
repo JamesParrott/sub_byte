@@ -161,3 +161,4 @@ grades_goals_forms_solutions
 sols*
 *.zip
 tests/pg100.txt
+/node_modules
