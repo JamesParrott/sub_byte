@@ -7,7 +7,7 @@ import {
   UNIQUE_SEEDS,
   encodeSeeds,
   seedsBitWidths,
-} from "./ops_andSeeds_codecs.mjs";
+} from "./ops_and_seeds_codecs.mjs";
 
 for (const [set, encoder, bitWidths] of [
   [OPS, encodeOps, opsBitWidths],

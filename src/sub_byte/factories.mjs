@@ -205,7 +205,7 @@ const mapIntegersToSymbols = function* (integers, decodings) {
   }
 };
 
-const MakeSubByteEncoderAndDecoder = function (valueSets) {
+export const MakeSubByteEncoderAndDecoder = function (valueSets) {
   const [bitWidths, encodings, decodings] =
     getBitWidthsEncodingsAndDecodings(valueSets);
 
@@ -230,5 +230,3 @@ const MakeSubByteEncoderAndDecoder = function (valueSets) {
 
   return [encoder, decoder, bitWidths, encodings, decodings];
 };
-
-export default MakeSubByteEncoderAndDecoder;

@@ -1,4 +1,4 @@
-import SYMBOLS from "./symbols.json"; //with { type: "json" };
+import SYMBOLS from "./symbols.json" with { type: "json" };
 
 import { MakeSubByteEncoderAndDecoder } from "../src/sub_byte/factories.mjs";
 
@@ -11,6 +11,6 @@ export const UNIQUE_SEEDS = new Set(SYMBOLS.SEEDS.map((x) => x.toString()));
 export const OPS = new Set(SYMBOLS.OPS);
 
 export const [encodeOps, decodeOps, opsBitWidths, opsEncodings, opsDecodings] =
-  MakeSubByteEncoderAndDecoder(OPS);
+  MakeSubByteEncoderAndDecoder([OPS]);
 export const [encodeSeeds, decodeSeeds, seedsBitWidths, seedsEncodings, seedsDecodings] =
-  MakeSubByteEncoderAndDecoder(ALL_SEEDS);
+  MakeSubByteEncoderAndDecoder([ALL_SEEDS]);
