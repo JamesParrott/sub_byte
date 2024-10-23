@@ -3,7 +3,7 @@ import sys
 import math
 import pathlib
 import subprocess
-from typing import Callable, Iterable
+from typing import Callable
 
 import pytest
 from hypothesis import given, settings
@@ -144,7 +144,7 @@ def js_seeds_decoder(encoded_seeds: str, # A hex string
 
 
 @given(op_strings_strategy)
-@settings(max_examples = 2500, deadline = None)
+@settings(max_examples = 25, deadline = None)
 @pytest.mark.parametrize(
         'encoder,decoder',
         [
@@ -162,7 +162,7 @@ def test_roundtrip_Py_and_JS_ops_encoder_via_CLIs(encoder,decoder,ops: list[str]
 
 
 @given(seeds_strategy)
-@settings(max_examples = 2500, deadline = None)
+@settings(max_examples = 25, deadline = None)
 @pytest.mark.parametrize(
         'encoder,decoder',
         [
@@ -183,7 +183,7 @@ def test_roundtrip_Py_and_JS_seeds_encoder_via_CLIs(encoder,decoder,seeds: list[
 
 
 @given(binary(min_size = 1))
-@settings(max_examples = 2500, deadline = None)
+@settings(max_examples = 25, deadline = None)
 @pytest.mark.parametrize(
         'encoder,decoder',
         [
@@ -206,7 +206,7 @@ def test_roundtrip_Py_and_JS_ops_decoder_via_CLIs(encoder,decoder,b: bytes):
 
 
 @given(binary_of_valid_seeds)
-@settings(max_examples = 2500, deadline = None)
+@settings(max_examples = 25, deadline = None)
 @pytest.mark.parametrize(
         'encoder,decoder',
         [

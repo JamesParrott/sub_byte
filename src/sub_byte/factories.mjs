@@ -1,21 +1,18 @@
-// node --disable-warning ExperimentalWarning encoder.mjs
+//e.g. :
+// cd tests
+// >node --disable-warning ExperimentalWarning encode.mjs + + + "*" "*" + - // 1 4 5 7 25 75 2 100 9 10
+// 014b
+// 0346ac1d89
+// >node --disable-warning ExperimentalWarning decode.mjs 8 014b
+// + + + * * + - //
+// >node --disable-warning ExperimentalWarning decode.mjs 10 " " 0346ac1d89
+// 1 4 5 7 25 75 2 100 9 10
 
 const GetBits = function (x) {
+  // E.g. GetBits(13) === '1101' 
   return x.toString(2);
 };
 
-export class ValueSet extends Set {
-  Natural;
-}
-
-// export class IntegerWidthsInCycle {
-//     constructor() {
-
-//     };
-//     static FromMaximumIntegers(max_ints) {
-
-//     };
-// };
 
 const cycle = function* (items) {
   while (true) {
@@ -42,9 +39,9 @@ const getBitWidth = function (bitWidths) {
   return result.done ? 0 : result.value;
 };
 
-const getN1Bits = function (N) {
-  // e.g. getN1Bits(8) === 0b11111111 === 255
-  return (1 << N) - 1;
+const allOnesBitMask = function (numberOfOnes) {
+  // e.g. allOnesBitMask(8) === 0b11111111 === 255
+  return (1 << numberOfOnes) - 1;
 };
 
 export const intEncoder = function* (integers, uintBitWidths) {
@@ -79,12 +76,11 @@ export const intEncoder = function* (integers, uintBitWidths) {
     while (bitsUsed >= 8) {
       // subtract bits to be yielded from counter, and yield them
       bitsUsed -= 8;
-      yield (buffer >> bitsUsed) & getN1Bits(8);
+      yield (buffer >> bitsUsed) & allOnesBitMask(8);
     }
 
     // Clear buffer of yielded bytes (only keep bitsUsed bits).
-    buffer = buffer & getN1Bits(bitsUsed);
-    // ((1 << (bitsUsed + 1)) -1);
+    buffer &= allOnesBitMask(bitsUsed);
 
     i++;
   }
@@ -115,7 +111,7 @@ export const intDecoder = function* (encoded, numInts, uintBitWidths) {
 
   let j = 0;
 
-  let uintBitWidth = getBitWidth(bitWidths, "'No bytes read yet. '", i);
+  let uintBitWidth = getBitWidth(bitWidths, "'No bytes read yet. '", 0);
 
   for (const byte of bytes) {
     // Left shift 8 bits to make room for byte
@@ -134,12 +130,12 @@ export const intDecoder = function* (encoded, numInts, uintBitWidths) {
       // mask is uintBitWidth 1s followed by bufferWidthInBits 0s up
       // the same total width as the original value of bufferWidthInBits
       // before the previous line.
-      const mask = getN1Bits(uintBitWidth);
+      const mask = allOnesBitMask(uintBitWidth);
       yield (buffer >> bufferWidthInBits) & mask;
       j++;
       // Clear buffer of the bits that made up the yielded integer
       // (the left most uintBitWidth bits)
-      buffer &= getN1Bits(bufferWidthInBits);
+      buffer &= allOnesBitMask(bufferWidthInBits);
 
       uintBitWidth = getBitWidth(bitWidths, byte, i);
     }

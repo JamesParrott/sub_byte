@@ -1,36 +1,143 @@
-import math
 import itertools
-from collections.abc import Iterable, Sequence, Iterator, Callable, Hashable
+from collections.abc import Iterable, Iterator, Callable, Hashable
 
 
 def get_bits(x: int) -> str:
-    """ E.g. get_bits(13) == '1101' because if:
-             x == 13 (==8+4+1) then:  
-             bin(x) == '0b1101', and:
-             bin(x).removeprefix('0b') == '1101'
-    """ 
+    """ E.g. get_bits(13) == '1101'. """
     return bin(x).removeprefix('0b')
 
+
+def all_ones_bit_mask(n: int) -> int:
+    """ E.g. all_ones_bit_mask(8) == 255 
+        Invariant property:  len(get_bits(all_ones_bit_mask(n))) - 2 
+    """
+    return (1 << n) - 1
+
+
+def intEncoder(
+    integers: Iterable[int],
+    uint_bit_widths: Iterable[int],
+    ) -> Iterator[int]:
+    """ If uint_bit_widths is an iterable that is not a container, e.g.
+        a once only iterator from a generator, it must yield the
+        same number of items or more, than len(integers).
+        i.e. the caller must handle cacheing of bit widths (or
+        repeating without cacheing).
+    """
+    bit_widths = itertools.cycle(uint_bit_widths) 
+
+    # Initialise a buffer (an ordinary Number)
+    # and a bit counter.
+    buffer = 0
+    bits_used = 0
+
+    for i, integer in enumerate(integers):
+        bit_width = next(bit_widths, 0)
+
+        if bit_width == 0: 
+            raise Exception(f'No bit width specified for integer: {integer},  number: {i}')
+
+        #Left bitshift to make room for next integer, add it in and bump the bit counter.
+        buffer <<= bit_width
+        buffer |= integer
+        bits_used += bit_width
+
+        # Yield encoded bytes from the buffer
+        while bits_used >= 8:
+            # subtract bits to be yielded from counter, and yield them
+            bits_used -= 8
+            yield (buffer >> bits_used) & all_ones_bit_mask(8)
+
+        # Clear buffer of yielded bytes (only keep bits_used bits).
+        buffer &= all_ones_bit_mask(bits_used)
+
+
+    # Clear the buffer of any encoded integers, that were too few
+    # to completely fill a whole byte.
+    if bits_used >= 1:
+        # left shift the data to start from the highest order bits (no leading zeros)
+        yield buffer << (8 - bits_used)
+
+
+def int_decoder(
+    encoded: Iterable[byte],
+    num_ints: int,          
+    uint_bit_widths: Iterable[int]) -> Iterator[int]: 
+    """If uint_bit_widths is an
+    Iterable that is not a Container, e.g.
+    # a once only iterator from a generator, the total of all its
+    # widths yielded, must be >= (8 * the number of bytes from encoded)
+    # i.e. as for int_encoder above, the caller must handle cacheing
+    # of bit widths (or repeating them without cacheing).
+    """
+    bit_widths = itertools.islice(itertools.cycle(uint_bit_widths), num_ints)
+    bytes = iter(encoded)
+
+    # Initialise a buffer (an ordinary Number)
+    # and a bit counter.
+    buffer = 0
+    buffer_width_in_bits = 0
+
+    j = 0
+
+    bit_width = next(bit_widths, 0)
+
+    for i, byte in enumerate(bytes):
+        # Left shift 8 bits to make room for byte
+        buffer <<= 8
+        # Bump counter by 8
+        buffer_width_in_bits += 8
+        # Add in byte to buffer
+        buffer |= byte
+
+        if buffer_width_in_bits < bit_width:
+            continue
+        
+
+        while buffer_width_in_bits >= bit_width and bit_width > 0:
+            buffer_width_in_bits -= bit_width
+            # mask is bit_width 1s followed by buffer_width_in_bits 0s up
+            # the same total width as the original value of buffer_width_in_bits
+            # before the previous line.
+            mask = all_ones_bit_mask(bit_width)
+            yield (buffer >> buffer_width_in_bits) & mask
+            j += 1
+            # Clear buffer of the bits that made up the yielded integer
+            # (the left most bit_width bits)
+            buffer &= all_ones_bit_mask(buffer_width_in_bits)
+
+            bit_width = next(bit_widths, 0)
+        
+
+        if bit_width == 0:
+            if buffer_width_in_bits >= 1 and j < num_ints:
+                raise Exception(
+                    f'Not enough uint bit widths to decode remaining bits {buffer_width_in_bits} with.',
+                )
+            
+
+            break
+
+
 def make_sub_byte_encoder_and_decoder(symbols: Iterable[Hashable]) -> tuple[Callable, Callable]:
-    # TODO: Use new Generics syntax instead of Hashable
-    
+
     # Remove repeated symbols, preserving their order.
     # A set will not preserve order, hence dict.fromkeys.  
-    # Requires dict to be ordered (Python >= 3.6 ish, 
-    # otherwise use collections.OrderedDict).
+    # Requires dict to be ordered (otherwise this must use 
+    # collections.OrderedDict, if Python <= 3.6 ish).
     decodings = list(dict.fromkeys(symbols))
 
     encodings = {symbol : decodings.index(symbol) for symbol in decodings}
 
     try:
         bytes([max(encodings.values())])
-    except ValueError as e:
+    except ValueError:
         raise Exception(f'Too many symbols to encode in a single byte, in {symbols=}')
         
 
 
     bits_per_symbol = len(get_bits(max(encodings.values())))
-    num_symbols_per_byte = 8 // bits_per_symbol
+    num_symbols_per_byte = 8 # bits_per_symbol
 
     assert num_symbols_per_byte >= 1, ('More than one byte needed to uniquely encode each symbol. '
                                        'Use a byte stream encoding library instead, e.g. protobuf.dev')
