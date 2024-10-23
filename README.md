@@ -1,10 +1,20 @@
-# Sub Byte
+# Sub_Byte
 
-Encodes and decodes sequences of integers with known widths, and sequences of symbols equivalent to integers under some mapping.
+Encodes and decodes sequences of integers with known widths (and sequences of symbols equivalent to integers under some mapping).
 
 ## Overview
 
-Sub byte crams as many symbols into each Byte as possible, crossing byte boundaries if necessary.
+Sub_byte crams as many symbols into each byte as possible using simple bit packing, crossing byte 
+boundaries if necessary, utilising a known fixed bit width for each symbol.  These bit widths and the 
+total number of symbols, must be associated with the encoded data as meta data.
+
+## Implementations
+
+### Python
+Calculate a cache of data in Python.
+
+### Javascript
+Decode a cache of data in Javascript, even in browser.
 
 ## Alternatives
 
