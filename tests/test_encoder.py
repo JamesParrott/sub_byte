@@ -9,21 +9,18 @@ import pytest
 from hypothesis import given, settings
 from hypothesis.strategies import sampled_from, lists, binary, integers, builds, tuples
 
+from sub_byte import factories
+
 from . import ops_and_seeds_codecs
 
 
 PARENT_DIR = pathlib.Path(__file__).parent
 
 
-@given(binary(min_size=1))
+@given(b=binary(min_size=1))
 def test_roundtrip_py_ops_decoder(b):
     # Leading zeros in last byte mean it could define fewer ops
-    min_num_ops_from_last_byte = math.ceil(
-        len(bin(b[-1]).removeprefix("0b")) / ops_and_seeds_codecs.bits_per_op
-    )
-
-    for i in range(min_num_ops_from_last_byte, ops_and_seeds_codecs.ops_per_byte + 1):
-        num_ops = ops_and_seeds_codecs.ops_per_byte * (len(b) - 1) + i
+    for num_ops in factories.possible_numbers_of_symbols(b, ops_and_seeds_codecs.ops_bit_widths):
         decoded = list(ops_and_seeds_codecs.decode_ops(b, num_ops))
         encoded = bytes(ops_and_seeds_codecs.encode_ops(decoded))
         assert b == encoded, f"{b=}, {encoded=}, {decoded=} {num_ops=}"
@@ -32,7 +29,7 @@ def test_roundtrip_py_ops_decoder(b):
 seeds_strategy = lists(sampled_from(list(ops_and_seeds_codecs.ALL_SEEDS)))
 
 
-@given(seeds_strategy)
+@given(s=seeds_strategy)
 def test_roundtrip_py_seeds_encoder(s):
     num_seeds = len(s)
     encoded = bytes(ops_and_seeds_codecs.encode_seeds(s))
@@ -53,17 +50,11 @@ binary_of_valid_seeds = builds(
 )
 
 
-@given(binary_of_valid_seeds)
+@given(b=binary_of_valid_seeds)
 def test_roundtrip_py_seeds_decoder(b):
     # Leading zeros in last byte mean it could define fewer seeds
-    min_num_seeds_from_last_byte = math.ceil(
-        len(bin(b[-1]).removeprefix("0b")) / ops_and_seeds_codecs.bits_per_seed
-    )
-
-    for i in range(
-        min_num_seeds_from_last_byte, ops_and_seeds_codecs.seeds_per_byte + 1
-    ):
-        num_seeds = ops_and_seeds_codecs.seeds_per_byte * (len(b) - 1) + i
+    
+    for num_seeds in factories.possible_numbers_of_symbols(b, ops_and_seeds_codecs.seeds_bit_widths):
         decoded = list(ops_and_seeds_codecs.decode_seeds(b, num_seeds))
         encoded = bytes(ops_and_seeds_codecs.encode_seeds(decoded))
         assert b == encoded, f"{b=}, {encoded=}, {decoded=} {num_seeds=}"
@@ -161,7 +152,7 @@ def js_seeds_decoder(
     return f'{RUN_NODE} {PARENT_DIR / "decode.mjs"} {num_symbols} " " {encoded_seeds}'
 
 
-@given(op_strings_strategy)
+@given(ops=op_strings_strategy)
 @settings(max_examples=25, deadline=None)
 @pytest.mark.parametrize(
     "encoder,decoder",
@@ -179,7 +170,7 @@ def test_roundtrip_Py_and_JS_ops_encoder_via_CLIs(encoder, decoder, ops: list[st
     assert ops == decoded, f"{ops=}, {encoded=}, {decoded=}"
 
 
-@given(seeds_strategy)
+@given(seeds=seeds_strategy)
 @settings(max_examples=25, deadline=None)
 @pytest.mark.parametrize(
     "encoder,decoder",
@@ -199,7 +190,7 @@ def test_roundtrip_Py_and_JS_seeds_encoder_via_CLIs(encoder, decoder, seeds: lis
     assert seeds == decoded, f"{seeds=}, {encoded=}, {decoded=}"
 
 
-@given(binary(min_size=1))
+@given(b=binary(min_size=1))
 @settings(max_examples=25, deadline=None)
 @pytest.mark.parametrize(
     "encoder,decoder",
@@ -212,12 +203,8 @@ def test_roundtrip_Py_and_JS_seeds_encoder_via_CLIs(encoder, decoder, seeds: lis
 )
 def test_roundtrip_Py_and_JS_ops_decoder_via_CLIs(encoder, decoder, b: bytes):
     # Leading zeros in last byte mean it could define fewer ops
-    min_num_ops_from_last_byte = math.ceil(
-        len(bin(b[-1]).removeprefix("0b")) / ops_and_seeds_codecs.bits_per_op
-    )
-
-    for i in range(min_num_ops_from_last_byte, ops_and_seeds_codecs.ops_per_byte + 1):
-        num_ops = ops_and_seeds_codecs.ops_per_byte * (len(b) - 1) + i
+    
+    for num_ops in factories.possible_numbers_of_symbols(b, ops_and_seeds_codecs.ops_bit_widths):
 
         decoded = list(decoder(b.hex(), num_ops))
         encoded = bytes.fromhex(encoder(decoded))
@@ -237,15 +224,8 @@ def test_roundtrip_Py_and_JS_ops_decoder_via_CLIs(encoder, decoder, b: bytes):
 )
 def test_roundtrip_Py_and_JS_seeds_decoder_via_CLIs(encoder, decoder, b: bytes):
     # Leading zeros in last byte mean it could define fewer seeds
-    min_num_seeds_from_last_byte = math.ceil(
-        len(bin(b[-1]).removeprefix("0b")) / ops_and_seeds_codecs.bits_per_seed
-    )
-
-    for i in range(
-        min_num_seeds_from_last_byte, ops_and_seeds_codecs.seeds_per_byte + 1
-    ):
-        num_seeds = ops_and_seeds_codecs.seeds_per_byte * (len(b) - 1) + i
-
+    
+    for num_seeds in factories.possible_numbers_of_symbols(b, ops_and_seeds_codecs.seeds_bit_widths):
         decoded = list(decoder(b.hex(), num_seeds))
         encoded = bytes.fromhex(encoder(decoded))
         assert b == encoded, f"{b=}, {encoded=}, {decoded=} {num_seeds=}"

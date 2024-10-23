@@ -1,6 +1,6 @@
 import { argv } from "node:process";
 
-import { decodeOps, opsBitWidths, decodeSeeds, seedsBitWidths} from "./ops_and_seeds_codecs.mjs";
+import { decodeOps, decodeSeeds} from "./ops_and_seeds_codecs.mjs";
 
 const numSymbols = parseInt(argv[2]);
 
@@ -19,9 +19,9 @@ const Uint8ArrayFromHexStr = function (hexStr) {
   return encoded;
 };
 
-for (const [line, decoder, bitWidths] of [
-  [argv[3], decodeOps, opsBitWidths],
-  [argv[4], decodeSeeds, seedsBitWidths],
+for (const [line, decoder] of [
+  [argv[3], decodeOps],
+  [argv[4], decodeSeeds],
 ]) {
   if (!line?.trim()) {
     continue;
@@ -29,7 +29,7 @@ for (const [line, decoder, bitWidths] of [
 
   const bytesFromHex = Uint8ArrayFromHexStr(line);
 
-  const decodedSymbols = Array.from(decoder(bytesFromHex, numSymbols, bitWidths));
+  const decodedSymbols = Array.from(decoder(bytesFromHex, numSymbols));
 
   console.log(decodedSymbols.reduce((s1, s2) => `${s1} ${s2}`));
 }

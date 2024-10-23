@@ -167,7 +167,7 @@ def map_integers_to_symbols(
 def make_sub_byte_encoder_and_decoder(
     value_sets: Iterable[Iterable[Hashable]],
 ) -> tuple[Callable, Callable]:
-    bit_widths, encodings, decodings = get_bit_widths_encodings_and_decodings()
+    bit_widths, encodings, decodings = get_bit_widths_encodings_and_decodings(value_sets)
 
     def encoder(
         symbols: Iterable[Hashable],
@@ -187,3 +187,50 @@ def make_sub_byte_encoder_and_decoder(
             yield symbol
 
     return encoder, decoder, bit_widths, encodings, decodings
+
+
+def possible_numbers_of_symbols(
+    b: Sequence[int],
+    bit_widths: Iterable[int],  # Must be positive integers
+) -> Iterator[int]:
+
+    padding = [None] * 8    
+    bit_widths_subsequences = more_itertools.windowed(itertools.chain(padding, cycle(bit_widths)), 9)
+    
+
+    num_symbols = 0
+    
+    num_bits = 0
+
+    for bit_widths_subsequence in bit_widths_subsequences:
+
+        if num_bits + bit_widths_subsequence[-1] > 8*len(b):
+            break
+        
+        num_symbols += 1
+
+        bit_width = bit_widths_subsequence[-1]
+        assert bit_width >= 1
+        num_bits += bit_width
+
+
+
+    last_8_bit_widths = bit_widths_subsequence[:9]
+
+    last_byte = b[-1]
+    last_byte_bits = get_bits(last_byte)
+    __, __, last_byte_trailing_zero_bits = last_byte_bits.rpartition('1')
+    num_zero_bits = len(last_byte_trailing_zero_bits)
+
+    for one_of_last_8_bit_widths in reversed(last_8_bit_widths):
+        yield num_symbols
+
+        num_zero_bits -= one_of_last_8_bit_widths
+
+        if num_zero_bits < 0:
+            break
+
+        num_symbols -= 1
+
+    
+
