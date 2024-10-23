@@ -1,0 +1,38 @@
+{
+  "name": "sub_byte",
+  "version": "0.0.0",
+  "description": "Encodes and decodes sequences of integers with known widths, and sequences of symbols equivalent to integers under some mapping.",
+  "main": "./src/sub_byte/factories.mjs",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "mocha tests/tests.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JamesParrott/sub_byte.git"
+  },
+  "keywords": [
+    "Encoder",
+    "Decoder",
+    "Serialiser"
+  ],
+  "author": "James Parrott <james.parrott@proton.me>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/JamesParrott/sub_byte/issues"
+  },
+  "homepage": "https://github.com/JamesParrott/sub_byte#readme",
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "eslint": "^9.13.0",
+    "fast-check": "^3.22.0",
+    "globals": "^15.11.0",
+    "mocha": "^10.7.3",
+    "prettier": "3.3.3"
+  },
+  "overrides": {
+    "glob": "^11.0.0"
+  }
+}
