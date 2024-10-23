@@ -1,6 +1,6 @@
 {
   "name": "sub_byte",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "Encodes and decodes sequences of integers with known widths, and sequences of symbols equivalent to integers under some mapping.",
   "main": "./src/sub_byte/factories.mjs",
   "directories": {
