@@ -1,106 +1,228 @@
-// node --disable-warning ExperimentalWarning encoder.mjs
+//e.g. :
+// cd tests
+// >node --disable-warning ExperimentalWarning encode.mjs + + + "*" "*" + - // 1 4 5 7 25 75 2 100 9 10
+// 014b
+// 0346ac1d89
+// >node --disable-warning ExperimentalWarning decode.mjs 8 014b
+// + + + * * + - //
+// >node --disable-warning ExperimentalWarning decode.mjs 10 " " 0346ac1d89
+// 1 4 5 7 25 75 2 100 9 10
+
+const GetBits = function (x) {
+  // E.g. GetBits(13) === '1101' 
+  return x.toString(2);
+};
 
 
-const GetBits = function(x) {
-    return x.toString(2)
-} 
+const cycle = function* (items) {
+  while (true) {
+    for (const item of items) {
+      yield item;
+    }
+  }
+};
 
+const firstNItems = function* (iterable, N) {
+  let numItemsYielded = 0;
+  for (const item of iterable) {
+    if (numItemsYielded >= N) {
+      break;
+    }
+    yield item;
+    numItemsYielded++;
+  }
+};
 
-export const MakeSubByteEncoderAndDecoder = function(symbols) {
+const getBitWidth = function (bitWidths) {
+  const result = bitWidths.next();
 
-    const unique_symbols = new Set(symbols);
-    const decodings = Array.from(unique_symbols.values());
+  return result.done ? 0 : result.value;
+};
 
-    const encodings = Object.fromEntries(decodings.entries().map(([i,s]) => [s,i]));
+const allOnesBitMask = function (numberOfOnes) {
+  // e.g. allOnesBitMask(8) === 0b11111111 === 255
+  return (1 << numberOfOnes) - 1;
+};
 
-    if (unique_symbols.size > 256) {
-        throw new Error(`Too many symbols to encode in a single byte, in ${symbols}`)
+export const intEncoder = function* (integers, uintBitWidths) {
+  // If uintBitWidths is an iterable that is not a container, e.g.
+  // a once only iterator from a generator, it must yield the
+  // same number of items or more, than the number of integers.
+  // i.e. the caller must handle cacheing of bit widths (or
+  // repeating without cacheing).
+  const bitWidths = cycle(uintBitWidths);
+
+  // Initialise a buffer (an ordinary Number)
+  // and a bit counter.
+  let buffer = 0;
+  let bitsUsed = 0;
+  let i = 0;
+
+  for (const integer of integers) {
+    const bitWidth = getBitWidth(bitWidths, integer, i);
+
+    if (bitWidth === 0) {
+      throw new Error(
+        `No bit width specified for integer: ${integer},  number: ${i}`,
+      );
     }
 
-    const bits_per_symbol = GetBits(unique_symbols.size - 1).length;
-    const num_symbols_per_byte = Math.floor(8 / bits_per_symbol);
+    // Left bitshift to make room for next integer, add it in and bump the bit counter.
+    buffer <<= bitWidth;
+    buffer |= integer;
+    bitsUsed += bitWidth;
 
-    if (num_symbols_per_byte <= 0) {
-        throw new Error('More than one byte needed to uniquely encode each symbol. '
-                       +' Use a byte stream encoding library instead, e.g. protobuf.dev'
-                       );
+    // Yield encoded bytes from the buffer
+    while (bitsUsed >= 8) {
+      // subtract bits to be yielded from counter, and yield them
+      bitsUsed -= 8;
+      yield (buffer >> bitsUsed) & allOnesBitMask(8);
     }
 
-    const encoder = function* (symbols_iterator) {
-        // let num = 0;
-        // let bits_used = 0
-        for (let result = symbols_iterator.next(); 
-             result.done===false;
-             result = symbols_iterator.next()) {
-            
-            let num = encodings[result.value];
-            // num <<= bits_per_symbol;
-            // num += encodings[result.value];
-            // bits_used += bits_per_symbol;
+    // Clear buffer of yielded bytes (only keep bitsUsed bits).
+    buffer &= allOnesBitMask(bitsUsed);
 
-            const rest_of_symbols_in_this_byte = symbols_iterator.take(num_symbols_per_byte-1);
+    i++;
+  }
 
+  // Clear the buffer of any encoded integers, that were too few
+  // to completely fill a whole byte.
+  if (bitsUsed >= 1) {
+    // left shift the data to start from the highest order bits (no leading zeros)
+    yield buffer << (8 - bitsUsed);
+  }
+};
 
-            rest_of_symbols_in_this_byte.forEach((symbol) => {
-                num <<= bits_per_symbol;
-                num += encodings[symbol];
-                // bits_used += bits_per_symbol;
-            });
+export const intDecoder = function* (encoded, numInts, uintBitWidths) {
+  // If uintBitWidths is an
+  // iterable that is not a container, e.g.
+  // a once only iterator from a generator, the total of all its
+  // widths yielded, must be >= (8 * the number of bytes from encoded)
+  // i.e. as for int_encoder above, the caller must handle cacheing
+  // of bit widths (or repeating them without cacheing).
+  const bitWidths = firstNItems(cycle(uintBitWidths), numInts);
+  const bytes = encoded?.[Symbol.iterator]() || encoded;
 
-            // bits_used -= 8;
-            // yield num >> bits_used
-            // num = (num << (8 - bits_used)) & 255 
-            yield num;
+  // Initialise a buffer (an ordinary Number)
+  // and a bit counter.
+  let buffer = 0;
+  let bufferWidthInBits = 0;
+  let i = 0;
 
+  let j = 0;
 
-            // num &
-        }
+  let uintBitWidth = getBitWidth(bitWidths, "'No bytes read yet. '", 0);
 
-    };
+  for (const byte of bytes) {
+    // Left shift 8 bits to make room for byte
+    buffer <<= 8;
+    // Bump counter by 8
+    bufferWidthInBits += 8;
+    // Add in byte to buffer
+    buffer |= byte;
 
-    let masks_and_offsets = [];
-
-    for (let j=0; j < num_symbols_per_byte; j++) {
-        
-        const num_zeros_to_prepad = bits_per_symbol * j;
-        const num_zeros_to_postpad = 8 - num_zeros_to_prepad - bits_per_symbol;
-
-        if (num_zeros_to_prepad + bits_per_symbol + num_zeros_to_postpad != 8) {
-            throw new Error('Internal calculation of padding bits within byte error: '
-                  +`${num_zeros_to_prepad}, ${bits_per_symbol}, ${num_zeros_to_postpad}`);
-        }
-
-        const byte_mask_bit_chars = `${'0'.repeat(num_zeros_to_prepad)}${'1'.repeat(bits_per_symbol)}${'0'.repeat(num_zeros_to_postpad)}`;
-
-        if (byte_mask_bit_chars.length != 8) {
-            throw new Error(`Byte bit mask not length 8 (should contain 8 1s or 0s): ${byte_mask_bit_chars}`);
-        }
-
-        
-        const byte_mask = parseInt(byte_mask_bit_chars, 2);
-
-        masks_and_offsets.push([byte_mask, num_zeros_to_postpad]);
-
-    }
-    
-    const decoder = function* (encoded, num_symbols) {
-        let masks_and_offsets_ = masks_and_offsets;
-        for (const byte of encoded) {
-            if (num_symbols < num_symbols_per_byte) {
-                masks_and_offsets_ = masks_and_offsets.slice(-num_symbols);
-            }
-            for (const [mask, num_trailing_zeros] of masks_and_offsets_) {
-                const index = (mask & byte) >> num_trailing_zeros;
-                yield decodings[index]; 
-                num_symbols -= 1;
-            }
-
-            if (num_symbols <= 0) {
-                return;
-            }
-        }
+    if (bufferWidthInBits < uintBitWidth) {
+      continue;
     }
 
-    return [encoder, decoder, bits_per_symbol, num_symbols_per_byte];
-}
+    while (bufferWidthInBits >= uintBitWidth && uintBitWidth > 0) {
+      bufferWidthInBits -= uintBitWidth;
+      // mask is uintBitWidth 1s followed by bufferWidthInBits 0s up
+      // the same total width as the original value of bufferWidthInBits
+      // before the previous line.
+      const mask = allOnesBitMask(uintBitWidth);
+      yield (buffer >> bufferWidthInBits) & mask;
+      j++;
+      // Clear buffer of the bits that made up the yielded integer
+      // (the left most uintBitWidth bits)
+      buffer &= allOnesBitMask(bufferWidthInBits);
 
+      uintBitWidth = getBitWidth(bitWidths, byte, i);
+    }
+
+    if (uintBitWidth === 0) {
+      if (bufferWidthInBits >= 1 && j < numInts) {
+        throw new Error(
+          `Not enough uint bit widths to decode remaining bits ${bufferWidthInBits} with.`,
+        );
+      }
+
+      break;
+    }
+
+    i++;
+  }
+};
+
+const getBitWidthsEncodingsAndDecodings = function (valueSets) {
+  const bitWidths = [];
+  const decodings = [];
+  const encodings = [];
+
+  for (const valueSet of valueSets) {
+    const uniqueSymbols = new Set(valueSet);
+    if (uniqueSymbols.size <= 1) {
+      throw new Error(
+        "All symbols are the same, or no symbols have been given." +
+          `Value set: ${valueSet}`,
+      );
+    }
+
+    const bitWidth = GetBits(uniqueSymbols.size - 1).length;
+    bitWidths.push(bitWidth);
+
+    const decoding = Array.from(uniqueSymbols.values());
+    decodings.push(decoding);
+
+    const encoding = Object.fromEntries(
+      decoding.entries().map(([i, s]) => [s, i]),
+    );
+    encodings.push(encoding);
+  }
+
+  return [bitWidths, encodings, decodings];
+};
+
+const mapSymbolsToIntegers = function* (symbols, encodings) {
+  const encodingsIterator = cycle(encodings);
+
+  for (const symbol of symbols) {
+    const encoding = encodingsIterator.next().value;
+    yield encoding[symbol];
+  }
+};
+
+const mapIntegersToSymbols = function* (integers, decodings) {
+  const decodingsIterator = cycle(decodings);
+
+  for (const integer of integers) {
+    const decoding = decodingsIterator.next().value;
+    yield decoding[integer];
+  }
+};
+
+export const MakeSubByteEncoderAndDecoder = function (valueSets) {
+  const [bitWidths, encodings, decodings] =
+    getBitWidthsEncodingsAndDecodings(valueSets);
+
+  const encoder = function* (symbols) {
+    for (const positiveInteger of intEncoder(
+      mapSymbolsToIntegers(symbols, encodings),
+      bitWidths,
+    )) {
+      yield positiveInteger;
+    }
+  };
+
+  const decoder = function* (encoded, numSymbols) {
+    const symbols = mapIntegersToSymbols(
+      intDecoder(encoded, numSymbols, bitWidths),
+      decodings,
+    );
+    for (const symbol of symbols) {
+      yield symbol;
+    }
+  };
+
+  return [encoder, decoder, bitWidths, encodings, decodings];
+};
