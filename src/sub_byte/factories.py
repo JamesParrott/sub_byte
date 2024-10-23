@@ -14,7 +14,7 @@ def all_ones_bit_mask(n: int) -> int:
     return (1 << n) - 1
 
 
-def intEncoder(
+def int_encoder(
     integers: Iterable[int],
     uint_bit_widths: Iterable[int],
 ) -> Iterator[int]:

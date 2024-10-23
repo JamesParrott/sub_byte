@@ -1,23 +1,25 @@
+import itertools
+
 from hypothesis import given, settings
 from hypothesis.strategies import lists, integers
 
 from sub_byte import factories
 
 
-extra_bit_widths_strategy = lists(integers(min_value=0, max_value=6))
+extra_bit_widths_strategy = lists(
+    integers(min_value=0, max_value=6),
+    min_size=1,
+)
 
 
-@given(lists(integers))
-@given(extra_bit_widths_strategy)
-@settings(max_examples=25, deadline=None)
-def test_roundtrip_py_int_encoder_and_decoder(list_of_ints, extra_widths):
-    num_seeds = len(list_of_ints)
+@given(ints=lists(integers(min_value=0)), extra_widths=extra_bit_widths_strategy)
+@settings(max_examples=250, deadline=None)
+def test_roundtrip_py_int_encoder_and_decoder(ints, extra_widths):
+    num_seeds = len(ints)
     bit_widths = [
-        len(factories.get_bits(i)) - 2 + extra_width
-        for (i, extra_width) in zip(list_of_ints, extra_widths)
+        len(factories.get_bits(i)) + extra_width
+        for (i, extra_width) in zip(ints, itertools.cycle(extra_widths))
     ]
-    encoded = bytes(factories.int_encoder(list_of_ints, bit_widths))
+    encoded = bytes(factories.int_encoder(ints, bit_widths))
     decoded = list(factories.int_decoder(encoded, num_seeds, bit_widths))
-    assert (
-        list_of_ints == decoded
-    ), f"{list_of_ints=}, {bit_widths=}, {encoded=}, {decoded=}"
+    assert ints == decoded, f"{ints=}, {bit_widths=}, {encoded=}, {decoded=}"
