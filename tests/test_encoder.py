@@ -1,6 +1,5 @@
 import functools
 import sys
-import math
 import pathlib
 import subprocess
 from typing import Callable
@@ -20,7 +19,9 @@ PARENT_DIR = pathlib.Path(__file__).parent
 @given(b=binary(min_size=1))
 def test_roundtrip_py_ops_decoder(b):
     # Leading zeros in last byte mean it could define fewer ops
-    for num_ops in factories.possible_numbers_of_symbols(b, ops_and_seeds_codecs.ops_bit_widths):
+    for num_ops in factories.possible_numbers_of_symbols(
+        b, ops_and_seeds_codecs.ops_bit_widths
+    ):
         decoded = list(ops_and_seeds_codecs.decode_ops(b, num_ops))
         encoded = bytes(ops_and_seeds_codecs.encode_ops(decoded))
         assert b == encoded, f"{b=}, {encoded=}, {decoded=} {num_ops=}"
@@ -53,8 +54,10 @@ binary_of_valid_seeds = builds(
 @given(b=binary_of_valid_seeds)
 def test_roundtrip_py_seeds_decoder(b):
     # Leading zeros in last byte mean it could define fewer seeds
-    
-    for num_seeds in factories.possible_numbers_of_symbols(b, ops_and_seeds_codecs.seeds_bit_widths):
+
+    for num_seeds in factories.possible_numbers_of_symbols(
+        b, ops_and_seeds_codecs.seeds_bit_widths
+    ):
         decoded = list(ops_and_seeds_codecs.decode_seeds(b, num_seeds))
         encoded = bytes(ops_and_seeds_codecs.encode_seeds(decoded))
         assert b == encoded, f"{b=}, {encoded=}, {decoded=} {num_seeds=}"
@@ -65,8 +68,9 @@ def _output_from_cmd(cmd: str) -> subprocess.CompletedProcess:
         cmd,
         stderr=subprocess.STDOUT,
         stdout=subprocess.PIPE,
-        # shell needs to be True on Linux, but not on Windows.
-        shell=sys.platform in ("linux", "darwin"),
+        # shell needs to be True on Linux, 
+        # and to run npm on Windows.
+        shell=True #sys.platform in ("linux", "darwin"),
     )
     output = result.stdout.decode(encoding="utf8")
     return output, result
@@ -153,7 +157,7 @@ def js_seeds_decoder(
 
 
 @given(ops=op_strings_strategy)
-@settings(max_examples=25, deadline=None)
+@settings(max_examples=300, deadline=None)
 @pytest.mark.parametrize(
     "encoder,decoder",
     [
@@ -171,7 +175,7 @@ def test_roundtrip_Py_and_JS_ops_encoder_via_CLIs(encoder, decoder, ops: list[st
 
 
 @given(seeds=seeds_strategy)
-@settings(max_examples=25, deadline=None)
+@settings(max_examples=300, deadline=None)
 @pytest.mark.parametrize(
     "encoder,decoder",
     [
@@ -191,7 +195,7 @@ def test_roundtrip_Py_and_JS_seeds_encoder_via_CLIs(encoder, decoder, seeds: lis
 
 
 @given(b=binary(min_size=1))
-@settings(max_examples=25, deadline=None)
+@settings(max_examples=300, deadline=None)
 @pytest.mark.parametrize(
     "encoder,decoder",
     [
@@ -203,16 +207,17 @@ def test_roundtrip_Py_and_JS_seeds_encoder_via_CLIs(encoder, decoder, seeds: lis
 )
 def test_roundtrip_Py_and_JS_ops_decoder_via_CLIs(encoder, decoder, b: bytes):
     # Leading zeros in last byte mean it could define fewer ops
-    
-    for num_ops in factories.possible_numbers_of_symbols(b, ops_and_seeds_codecs.ops_bit_widths):
 
+    for num_ops in factories.possible_numbers_of_symbols(
+        b, ops_and_seeds_codecs.ops_bit_widths
+    ):
         decoded = list(decoder(b.hex(), num_ops))
         encoded = bytes.fromhex(encoder(decoded))
         assert b == encoded, f"{b=}, {encoded=}, {decoded=} {num_ops=}"
 
 
 @given(binary_of_valid_seeds)
-@settings(max_examples=25, deadline=None)
+@settings(max_examples=300, deadline=None)
 @pytest.mark.parametrize(
     "encoder,decoder",
     [
@@ -224,8 +229,10 @@ def test_roundtrip_Py_and_JS_ops_decoder_via_CLIs(encoder, decoder, b: bytes):
 )
 def test_roundtrip_Py_and_JS_seeds_decoder_via_CLIs(encoder, decoder, b: bytes):
     # Leading zeros in last byte mean it could define fewer seeds
-    
-    for num_seeds in factories.possible_numbers_of_symbols(b, ops_and_seeds_codecs.seeds_bit_widths):
+
+    for num_seeds in factories.possible_numbers_of_symbols(
+        b, ops_and_seeds_codecs.seeds_bit_widths
+    ):
         decoded = list(decoder(b.hex(), num_seeds))
         encoded = bytes.fromhex(encoder(decoded))
         assert b == encoded, f"{b=}, {encoded=}, {decoded=} {num_seeds=}"
