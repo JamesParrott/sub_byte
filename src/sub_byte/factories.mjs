@@ -206,11 +206,11 @@ export const MakeSubByteEncoderAndDecoder = function (valueSets) {
     getBitWidthsEncodingsAndDecodings(valueSets);
 
   const encoder = function* (symbols) {
-    for (const byte of intEncoder(
+    for (const positiveInteger of intEncoder(
       mapSymbolsToIntegers(symbols, encodings),
       bitWidths,
     )) {
-      yield byte;
+      yield positiveInteger;
     }
   };
 
