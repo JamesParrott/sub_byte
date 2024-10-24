@@ -9,10 +9,9 @@
 // 1 4 5 7 25 75 2 100 9 10
 
 const GetBits = function (x) {
-  // E.g. GetBits(13) === '1101' 
+  // E.g. GetBits(13) === '1101'
   return x.toString(2);
 };
-
 
 const cycle = function* (items) {
   while (true) {

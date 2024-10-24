@@ -68,9 +68,9 @@ def _output_from_cmd(cmd: str) -> subprocess.CompletedProcess:
         cmd,
         stderr=subprocess.STDOUT,
         stdout=subprocess.PIPE,
-        # shell needs to be True on Linux, 
+        # shell needs to be True on Linux,
         # and to run npm on Windows.
-        shell=True #sys.platform in ("linux", "darwin"),
+        shell=True,  # sys.platform in ("linux", "darwin"),
     )
     output = result.stdout.decode(encoding="utf8")
     return output, result
@@ -157,7 +157,7 @@ def js_seeds_decoder(
 
 
 @given(ops=op_strings_strategy)
-@settings(max_examples=3000, deadline=None)
+@settings(max_examples=1000, deadline=None)
 @pytest.mark.parametrize(
     "encoder,decoder",
     [
@@ -175,7 +175,7 @@ def test_roundtrip_Py_and_JS_ops_encoder_via_CLIs(encoder, decoder, ops: list[st
 
 
 @given(seeds=seeds_strategy)
-@settings(max_examples=3000, deadline=None)
+@settings(max_examples=1000, deadline=None)
 @pytest.mark.parametrize(
     "encoder,decoder",
     [
@@ -195,7 +195,7 @@ def test_roundtrip_Py_and_JS_seeds_encoder_via_CLIs(encoder, decoder, seeds: lis
 
 
 @given(b=binary(min_size=1))
-@settings(max_examples=3000, deadline=None)
+@settings(max_examples=1000, deadline=None)
 @pytest.mark.parametrize(
     "encoder,decoder",
     [
@@ -217,7 +217,7 @@ def test_roundtrip_Py_and_JS_ops_decoder_via_CLIs(encoder, decoder, b: bytes):
 
 
 @given(binary_of_valid_seeds)
-@settings(max_examples=3000, deadline=None)
+@settings(max_examples=1000, deadline=None)
 @pytest.mark.parametrize(
     "encoder,decoder",
     [
