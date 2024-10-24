@@ -12,5 +12,10 @@ export const OPS = new Set(SYMBOLS.OPS);
 
 export const [encodeOps, decodeOps, opsBitWidths, opsEncodings, opsDecodings] =
   MakeSubByteEncoderAndDecoder([OPS]);
-export const [encodeSeeds, decodeSeeds, seedsBitWidths, seedsEncodings, seedsDecodings] =
-  MakeSubByteEncoderAndDecoder([ALL_SEEDS]);
+export const [
+  encodeSeeds,
+  decodeSeeds,
+  seedsBitWidths,
+  seedsEncodings,
+  seedsDecodings,
+] = MakeSubByteEncoderAndDecoder([ALL_SEEDS]);
