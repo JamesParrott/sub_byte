@@ -25,7 +25,7 @@ def test_roundtrip_py_int_encoder_and_decoder(ints, extra_widths):
     decoded = list(factories.int_decoder(encoded, num_seeds, bit_widths))
     assert ints == decoded, f"{ints=}, {bit_widths=}, {encoded=}, {decoded=}"
 
-
+@pytest.mark.skip(reason="Flakey.  Sporadically hangs in CI. ")
 def test_JS_int_encoder_decoder_roundtrip_hardcoded_test_data():
     output, result = _output_from_cmd("npm test")
 

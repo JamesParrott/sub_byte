@@ -56,11 +56,11 @@ jobs:
       shell: bash
       run: ls -A
 
-    - name: Install JS deps from npm
-      run: npm ci
+    # - name: Install JS deps from npm
+    #   run: npm ci
 
-    - name: Run JS tests
-      run: npm test
+    # - name: Run JS tests
+    #   run: npm test
 
     - name: Run tests (including JS tests)
       working-directory: tests

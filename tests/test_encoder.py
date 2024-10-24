@@ -70,7 +70,7 @@ def _output_from_cmd(cmd: str) -> subprocess.CompletedProcess:
         stdout=subprocess.PIPE,
         # shell needs to be True on Linux,
         # and to run npm on Windows.
-        shell=True,  # sys.platform in ("linux", "darwin"),
+        shell=sys.platform in ("linux", "darwin"),
     )
     output = result.stdout.decode(encoding="utf8")
     return output, result
