@@ -2,6 +2,7 @@ import itertools
 
 from hypothesis import given, settings
 from hypothesis.strategies import lists, integers
+import pytest
 
 from sub_byte import factories
 
