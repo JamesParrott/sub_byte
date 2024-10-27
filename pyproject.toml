@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sub-byte"
-version = "0.0.1"
+dynamic = ["version"]
 authors = [{name = "James Parrott", email = "james.parrott@proton.me"}]
 description = "Encodes and decodes sequences of integers with known widths, and sequences of symbols equivalent to integers under some mapping. "
 readme = {file = "README.md", content-type = "text/markdown"}
@@ -14,6 +14,7 @@ license = {file = "LICENSE.md"}
 classifiers = [
     "Programming Language :: Python",
 ]
+
 dependencies = [
     "more_itertools",
 ]
@@ -23,7 +24,24 @@ test = [
     "hypothesis",
 ]
 
+[project.urls]   
+"Homepage" = "https://github.com/JamesParrott/sub_byte"
+"Bug Tracker" = "https://github.com/JamesParrott/sub_byte/issues"
 
+[tool.hatch.version]
+path = "package.json"
+pattern = '"version": "(?P<version>\d+\.\d+\.\d+)",'
+
+[tool.hatch.build.targets.wheel]
+include = [
+  "src/sub_byte/*.py",
+]
+exclude = [
+  "*.mjs",
+  "*.json",
+  "*.js",
+  "*.cjs",  
+]
 
 
 
