@@ -4,9 +4,10 @@ Encodes and decodes sequences of integers with known widths (and sequences of sy
 
 ## Overview
 
-Sub_byte crams as many symbols into each byte as possible using simple bit packing, crossing byte 
-boundaries if necessary, utilising a known fixed bit width for each symbol.  These bit widths and the 
+Sub_byte efficiently stores data, while preserving its structure, without requiring compression or decompression.  Simple bit packing, using less than a byte for <=7 bit fiels less, crossing byte 
+boundaries if necessary, utilising a known fixed bit width for each symbol (avoiding continuation bits).  The bit width sequence and the 
 total number of symbols, must be associated with the encoded data as meta data.
+Data validation (e.g. checksums or hashes) must be done by the user, but can be appended to a bit width cycle.
 
 ## Implementations
 

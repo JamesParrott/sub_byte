@@ -63,7 +63,7 @@ def test_roundtrip_py_seeds_decoder(b):
         assert b == encoded, f"{b=}, {encoded=}, {decoded=} {num_seeds=}"
 
 
-def _output_from_cmd(cmd: str) -> subprocess.CompletedProcess:
+def _output_from_cmd(cmd: str) -> tuple[str, subprocess.CompletedProcess]:
     result = subprocess.run(
         cmd,
         stderr=subprocess.STDOUT,
