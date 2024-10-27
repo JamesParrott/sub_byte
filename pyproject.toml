@@ -33,9 +33,6 @@ path = "package.json"
 pattern = '"version": "(?P<version>\d+\.\d+\.\d+)",'
 
 [tool.hatch.build.targets.wheel]
-include = [
-  "src/sub_byte/*.py",
-]
 exclude = [
   "*.mjs",
   "*.json",
