@@ -62,6 +62,6 @@ jobs:
     # - name: Run JS tests
     #   run: npm test
 
-    - name: Run tests (including JS tests)
+    - name: Run Python tests (JS tested via CLI).
       working-directory: tests
       run: pytest
