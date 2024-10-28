@@ -68,6 +68,9 @@ def _output_from_cmd(cmd: str) -> tuple[str, subprocess.CompletedProcess]:
         cmd,
         stderr=subprocess.STDOUT,
         stdout=subprocess.PIPE,
+        # shell needs to be True on Linux,
+        # and to run npm on Windows.
+        shell=sys.platform in ("linux", "darwin"),
     )
     output = result.stdout.decode(encoding="utf8")
     return output, result
