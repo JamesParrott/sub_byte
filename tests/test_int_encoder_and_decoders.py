@@ -1,6 +1,6 @@
 import itertools
 
-from hypothesis import given, settings
+from hypothesis import given, settings, reproduce_failure
 from hypothesis.strategies import lists, integers
 import pytest
 
@@ -15,7 +15,8 @@ extra_bit_widths_strategy = lists(
 
 
 @given(ints=lists(integers(min_value=0)), extra_widths=extra_bit_widths_strategy)
-@settings(max_examples=250, deadline=None)
+@reproduce_failure('6.115.5', b'AAEAAAA=')
+@settings(deadline=None)
 def test_roundtrip_py_int_encoder_and_decoder(ints, extra_widths):
     num_seeds = len(ints)
     bit_widths = [

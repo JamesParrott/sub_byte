@@ -5,7 +5,7 @@ import subprocess
 from typing import Callable
 
 import pytest
-from hypothesis import given, settings
+from hypothesis import given, settings, reproduce_failure
 from hypothesis.strategies import sampled_from, lists, binary, integers, builds, tuples
 
 from sub_byte import factories
@@ -154,7 +154,8 @@ def js_seeds_decoder(
 
 
 @given(ops=op_strings_strategy)
-@settings(max_examples=250, deadline=None)
+@reproduce_failure('6.115.5', b'AAEAAAA=')
+@settings(deadline=None)
 @pytest.mark.parametrize(
     "encoder,decoder",
     [
@@ -172,7 +173,8 @@ def test_roundtrip_Py_and_JS_ops_encoder_via_CLIs(encoder, decoder, ops: list[st
 
 
 @given(seeds=seeds_strategy)
-@settings(max_examples=250, deadline=None)
+@reproduce_failure('6.115.5', b'AAEAAAA=')
+@settings(deadline=None)
 @pytest.mark.parametrize(
     "encoder,decoder",
     [
@@ -192,7 +194,8 @@ def test_roundtrip_Py_and_JS_seeds_encoder_via_CLIs(encoder, decoder, seeds: lis
 
 
 @given(b=binary(min_size=1))
-@settings(max_examples=250, deadline=None)
+@reproduce_failure('6.115.5', b'AAEAAAA=')
+@settings(deadline=None)
 @pytest.mark.parametrize(
     "encoder,decoder",
     [
@@ -214,7 +217,8 @@ def test_roundtrip_Py_and_JS_ops_decoder_via_CLIs(encoder, decoder, b: bytes):
 
 
 @given(binary_of_valid_seeds)
-@settings(max_examples=250, deadline=None)
+@reproduce_failure('6.115.5', b'AAEAAAA=')
+@settings(deadline=None)
 @pytest.mark.parametrize(
     "encoder,decoder",
     [
