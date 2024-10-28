@@ -15,7 +15,7 @@ extra_bit_widths_strategy = lists(
 
 
 @given(ints=lists(integers(min_value=0)), extra_widths=extra_bit_widths_strategy)
-@settings(max_examples=10, deadline=None)
+@settings(max_examples=1000, deadline=None)
 def test_roundtrip_py_int_encoder_and_decoder(ints, extra_widths):
     num_seeds = len(ints)
     bit_widths = [
