@@ -27,6 +27,10 @@ jobs:
           # "ubuntu-24.04",
           "windows-latest",
         ]
+        use_shell: [
+          'True',
+          'False',
+        ]
         # include:
         #   - os: ubuntu-24.04
         #     python-version: "3.14.0-alpha.0"
@@ -65,3 +69,5 @@ jobs:
     - name: Run tests (including JS tests)
       working-directory: tests
       run: pytest
+      env: 
+        SUB_BYTE_USE_SHELL: ${{ matrix.use_shell }}
