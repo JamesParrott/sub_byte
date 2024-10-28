@@ -63,7 +63,7 @@ def test_roundtrip_py_seeds_decoder(b):
         encoded = bytes(ops_and_seeds_codecs.encode_seeds(decoded))
         assert b == encoded, f"{b=}, {encoded=}, {decoded=} {num_seeds=}"
 
-SHELL = os.getenv('SUB_BYTE_USE_SHELL')
+SHELL = bool(os.getenv('SUB_BYTE_USE_SHELL'))
 
 def _output_from_cmd(cmd: str) -> tuple[str, subprocess.CompletedProcess]:
     result = subprocess.run(
