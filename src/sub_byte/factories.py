@@ -193,7 +193,7 @@ def make_sub_byte_encoder_and_decoder(
         encoded: Iterable[bytes],
         number_of_symbols: int,
     ) -> Iterator[Hashable]:
-        for symbol in map_symbols_to_integers(
+        for symbol in map_integers_to_symbols(
             int_decoder(encoded, number_of_symbols, bit_widths), decodings
         ):
             yield symbol
