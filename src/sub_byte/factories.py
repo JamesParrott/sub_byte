@@ -63,7 +63,9 @@ def int_encoder(
 
 
 def int_decoder(
-    encoded: Iterable[bytes], num_ints: int, uint_bit_widths: Iterable[int]
+    encoded: Iterable[bytes],
+    num_ints: int,
+    uint_bit_widths: Iterable[int]
 ) -> Iterator[int]:
     """If uint_bit_widths is an
     Iterable that is not a Container, e.g.
@@ -73,7 +75,7 @@ def int_decoder(
     # of bit widths (or repeating them without cacheing).
     """
     bit_widths = itertools.islice(itertools.cycle(uint_bit_widths), num_ints)
-    bytes = iter(encoded)
+    bytes_ = iter(encoded)
 
     # Initialise a buffer (an ordinary Number)
     # and a bit counter.
@@ -84,7 +86,7 @@ def int_decoder(
 
     bit_width = next(bit_widths, 0)
 
-    for i, byte in enumerate(bytes):
+    for i, byte in enumerate(bytes_):
         # Left shift 8 bits to make room for byte
         buffer <<= 8
         # Bump counter by 8
@@ -120,7 +122,7 @@ def int_decoder(
 
 def get_bit_widths_encodings_and_decodings(
     value_sets: Iterable[Iterable[Hashable]],
-) -> tuple[list[int], list[list[Hashable]], list[dict[Hashable, int]]]:
+) -> tuple[list[int], list[list[dict[Hashable, int]], list[Hashable]]]:
     bit_widths = []
     decodings = []
     encodings = []
@@ -168,7 +170,13 @@ def map_integers_to_symbols(
 
 def make_sub_byte_encoder_and_decoder(
     value_sets: Iterable[Iterable[Hashable]],
-) -> tuple[Callable, Callable]:
+) -> tuple[Callable[[Iterable[Hashable]], Iterator[int]],
+           Callable[[Iterable[bytes], int], Iterator[Hashable]],
+           list[int],
+           list[dict[Hashable, int]],
+           list[list[Hashable]]
+          ]:
+
     bit_widths, encodings, decodings = get_bit_widths_encodings_and_decodings(
         value_sets
     )
@@ -182,7 +190,7 @@ def make_sub_byte_encoder_and_decoder(
             yield unsigned_integer
 
     def decoder(
-        encoded: Iterable[int],
+        encoded: Iterable[bytes],
         number_of_symbols: int,
     ) -> Iterator[Hashable]:
         for symbol in map_symbols_to_integers(
