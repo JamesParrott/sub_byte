@@ -63,7 +63,7 @@ def int_encoder(
 
 
 def int_decoder(
-    encoded: Iterable[bytes],
+    encoded: Iterable[int],
     num_ints: int,
     uint_bit_widths: Iterable[int]
 ) -> Iterator[int]:
@@ -122,7 +122,7 @@ def int_decoder(
 
 def get_bit_widths_encodings_and_decodings(
     value_sets: Iterable[Iterable[Hashable]],
-) -> tuple[list[int], list[list[dict[Hashable, int]], list[Hashable]]]:
+) -> tuple[list[int], list[dict[Hashable, int]], list[list[Hashable]]]:
     bit_widths = []
     decodings = []
     encodings = []
@@ -171,7 +171,7 @@ def map_integers_to_symbols(
 def make_sub_byte_encoder_and_decoder(
     value_sets: Iterable[Iterable[Hashable]],
 ) -> tuple[Callable[[Iterable[Hashable]], Iterator[int]],
-           Callable[[Iterable[bytes], int], Iterator[Hashable]],
+           Callable[[Iterable[int], int], Iterator[Hashable]],
            list[int],
            list[dict[Hashable, int]],
            list[list[Hashable]]
@@ -190,7 +190,7 @@ def make_sub_byte_encoder_and_decoder(
             yield unsigned_integer
 
     def decoder(
-        encoded: Iterable[bytes],
+        encoded: Iterable[int],
         number_of_symbols: int,
     ) -> Iterator[Hashable]:
         for symbol in map_integers_to_symbols(
