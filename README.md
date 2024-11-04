@@ -33,3 +33,11 @@ Encodes max symbol per byte. Variable byte encoding - uses continuation bits.
 
 - Exploits statistical distributions (e.g. "E" being more common in English text than "Q") and patterns.
 - Unstructured until the end user unzips the archive.
+
+
+## Development
+
+### Type checking:
+```shell
+mypy src\sub_byte --ignore-missing-imports
+```
