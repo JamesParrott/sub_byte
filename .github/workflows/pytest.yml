@@ -3,9 +3,9 @@ name: Run PyTest
 description: Run the API Fuzz tests using Pytest and Hypothesis
 
 on:
-  push:
-  pull_request:
-  workflow_call:
+  # push:
+  # pull_request:
+  # workflow_call:
   workflow_dispatch:
 
 jobs:

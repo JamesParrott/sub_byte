@@ -121,9 +121,9 @@ def int_decoder(
             break
 
 
-def get_bit_widths_encodings_and_decodings(
-    value_sets: Iterable[Iterable[Hashable]],
-) -> tuple[list[int], list[dict[Hashable, int]], list[list[Hashable]]]:
+def get_bit_widths_encodings_and_decodings[H: Hashable](
+    value_sets: Iterable[Iterable[H]],
+) -> tuple[list[int], list[dict[H, int]], list[list[H]]]:
     bit_widths = []
     decodings = []
     encodings = []
