@@ -19,7 +19,8 @@ extra_bit_widths_strategy = lists(
 def test_roundtrip_py_int_encoder_and_decoder(ints, extra_widths):
     num_seeds = len(ints)
     bit_widths = [
-        i.bit_length() + extra_width
+        # Can't use int.bit_length without extra code, as (0).bit_length() == 0
+        len(factories.get_bits(i)) + extra_width
         for (i, extra_width) in zip(ints, itertools.cycle(extra_widths))
     ]
     encoded = bytes(factories.int_encoder(ints, bit_widths))
