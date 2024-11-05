@@ -54,5 +54,8 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+    - name: Install code for deps
+      run: pip install -e .
+      
     - uses: jakebailey/pyright-action@v2
 
