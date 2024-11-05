@@ -195,13 +195,13 @@ def encoder_and_decoder_from_bit_widths_and_mappings[H: Hashable](
     return encoder, decoder
 
 
-def make_sub_byte_encoder_and_decoder(
-    value_sets: Iterable[Iterable[Hashable]],
-) -> tuple[Callable[[Iterable[Hashable]], Iterator[int]],
-           Callable[[Iterable[int], int], Iterator[Hashable]],
+def make_sub_byte_encoder_and_decoder[H: Hashable](
+    value_sets: Iterable[Iterable[H]],
+) -> tuple[Callable[[Iterable[H]], Iterator[int]],
+           Callable[[Iterable[int], int], Iterator[H]],
            list[int],
-           list[dict[Hashable, int]],
-           list[list[Hashable]]
+           list[dict[H, int]],
+           list[list[H]]
           ]:
 
     bit_widths, encodings, decodings = get_bit_widths_encodings_and_decodings(
