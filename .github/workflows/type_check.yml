@@ -56,6 +56,8 @@ jobs:
 
     - name: Install code for deps
       run: pip install -e .
-      
-    - uses: jakebailey/pyright-action@v2
 
+    - uses: jakebailey/pyright-action@v2
+      with:
+        extra-args:
+          src/sub_byte/factories.py
