@@ -170,9 +170,9 @@ def map_integers_to_symbols[H: Hashable](
 
 
 def encoder_and_decoder_from_bit_widths_and_mappings[H: Hashable](
-    bit_widths: list[int],
-    encodings: list[dict[H, int]],
-    decodings: list[list[H]], 
+    bit_widths: Iterable[int],
+    encodings: Iterable[dict[H, int]],
+    decodings: Iterable[list[H]], 
     ):
 
     def encoder(
