@@ -128,8 +128,8 @@ def get_bit_widths_encodings_and_decodings(
     encodings = []
 
     for value_set in value_sets:
-        # A set would not preserve the order in value_set,
-        # hence dict.fromkeys is used.
+        # A set would not preserve the order of the elements 
+        # in value_set, hence dict.fromkeys is used.
         decoding = list(dict.fromkeys((value_set)))
         if len(decoding) <= 1:
             raise Exception(
