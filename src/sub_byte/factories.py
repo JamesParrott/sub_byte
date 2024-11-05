@@ -1,5 +1,6 @@
 import itertools
 from collections.abc import Iterable, Iterator, Callable, Hashable, Sequence
+import typing
 
 import more_itertools
 
@@ -150,22 +151,48 @@ def get_bit_widths_encodings_and_decodings(
     return bit_widths, encodings, decodings
 
 
-def map_symbols_to_integers(
-    symbols: Iterable[Hashable],
-    encodings: Iterable[dict[Hashable, int]],
+def map_symbols_to_integers[H: Hashable](
+    symbols: Iterable[H],
+    encodings: Iterable[dict[H, int]]
 ) -> Iterator[int]:
     for symbol, encoding in zip(symbols, itertools.cycle(encodings)):
         yield encoding[symbol]
 
 
-def map_integers_to_symbols(
+def map_integers_to_symbols[H: Hashable](
     unsigned_integers: Iterable[int],
-    decodings: Iterable[Sequence[Hashable]],
-) -> Iterable[Hashable]:
+    decodings: Iterable[Sequence[H]]
+) -> Iterator[H]:
     for unsigned_integer, decoding in zip(
         unsigned_integers, itertools.cycle(decodings)
     ):
         yield decoding[unsigned_integer]
+
+
+def encoder_and_decoder_from_bit_widths_and_mappings[H: Hashable](
+    bit_widths: list[int],
+    encodings: list[dict[H, int]],
+    decodings: list[list[H]], 
+    ):
+
+    def encoder(
+        symbols: Iterable[H],
+    ) -> Iterator[int]:
+        for unsigned_integer in int_encoder(
+            map_symbols_to_integers(symbols, encodings), bit_widths
+        ):
+            yield unsigned_integer
+
+    def decoder(
+        encoded: Iterable[int],
+        number_of_symbols: int,
+    ) -> Iterator[H]:
+        for symbol in map_integers_to_symbols(
+            int_decoder(encoded, number_of_symbols, bit_widths), decodings
+        ):
+            yield symbol
+
+    return encoder, decoder
 
 
 def make_sub_byte_encoder_and_decoder(
@@ -181,30 +208,18 @@ def make_sub_byte_encoder_and_decoder(
         value_sets
     )
 
-    def encoder(
-        symbols: Iterable[Hashable],
-    ) -> Iterator[int]:
-        for unsigned_integer in int_encoder(
-            map_symbols_to_integers(symbols, encodings), bit_widths
-        ):
-            yield unsigned_integer
-
-    def decoder(
-        encoded: Iterable[int],
-        number_of_symbols: int,
-    ) -> Iterator[Hashable]:
-        for symbol in map_integers_to_symbols(
-            int_decoder(encoded, number_of_symbols, bit_widths), decodings
-        ):
-            yield symbol
+    encoder, decoder = encoder_and_decoder_from_bit_widths_and_mappings(
+        bit_widths, encodings, decodings)
 
     return encoder, decoder, bit_widths, encodings, decodings
+
 
 
 def possible_numbers_of_symbols(
     b: Sequence[int],
     bit_widths: Iterable[int],  # Must be positive integers
 ) -> Iterator[int]:
+
     padding = [None] * 8
     bit_widths_subsequences = more_itertools.windowed(
         itertools.chain(padding, itertools.cycle(bit_widths)), 9
@@ -215,26 +230,43 @@ def possible_numbers_of_symbols(
     num_bits = 0
 
     for bit_widths_subsequence in bit_widths_subsequences:
-        if num_bits + bit_widths_subsequence[-1] > 8 * len(b):
+
+        last_bit_width = bit_widths_subsequence[-1]
+        
+        if last_bit_width is None:
+            raise Exception(
+                f'{last_bit_width=} cannot be None (got: {bit_widths_subsequence=})'
+            )
+
+
+        if num_bits + last_bit_width > 8 * len(b):
             break
 
         num_symbols += 1
 
-        bit_width = bit_widths_subsequence[-1]
-        assert bit_width >= 1
-        num_bits += bit_width
+        assert last_bit_width >= 1
+        num_bits += last_bit_width
+    else:
+        raise Exception(
+            'Could not find last bit widths (up to 8). '
+            'Ensure bit_widths is non-empty '
+            f'(got: {bit_widths=}).'
+        )
 
-    last_8_bit_widths = bit_widths_subsequence[:9]
+    up_to_last_8_bit_widths = bit_widths_subsequence[:9]
 
     last_byte = b[-1]
     last_byte_bits = get_bits(last_byte)
     __, __, last_byte_trailing_zero_bits = last_byte_bits.rpartition("1")
     num_zero_bits = len(last_byte_trailing_zero_bits)
 
-    for one_of_last_8_bit_widths in reversed(last_8_bit_widths):
+    for one_of_last_bit_widths in reversed(up_to_last_8_bit_widths):
         yield num_symbols
 
-        num_zero_bits -= one_of_last_8_bit_widths
+        if one_of_last_bit_widths is None:
+            break
+
+        num_zero_bits -= one_of_last_bit_widths
 
         if num_zero_bits < 0:
             break

@@ -39,6 +39,11 @@ Encodes max symbol per byte. Variable byte encoding - uses continuation bits.
 
 ### Type checking:
 #### Python
+##### MyPY
 ```shell
 mypy src\sub_byte --ignore-missing-imports
+```
+##### Pyright
+```shell
+pyright src\sub_byte\factories.py
 ```
