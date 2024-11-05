@@ -233,9 +233,9 @@ def possible_numbers_of_symbols(
 
         last_bit_width = bit_widths_subsequence[-1]
         
-        if last_bit_width is None:
+        if last_bit_width is None or last_bit_width <= 0:
             raise Exception(
-                f'{last_bit_width=} cannot be None (got: {bit_widths_subsequence=})'
+                f'Bit widths must be non-zero positive integers.  Got: {last_bit_width=} and {bit_widths_subsequence=})'
             )
 
 
