@@ -23,6 +23,9 @@ test = [
     "pytest",
     "hypothesis",
 ]
+"mypy" = [
+    "mypy"
+]
 
 [project.urls]   
 "Homepage" = "https://github.com/JamesParrott/sub_byte"
