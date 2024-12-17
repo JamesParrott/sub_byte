@@ -8,12 +8,15 @@
 // >node --disable-warning ExperimentalWarning decode.mjs 10 " " 0346ac1d89
 // 1 4 5 7 25 75 2 100 9 10
 
-const GetBits = function (x) {
+
+declare module 'sub_byte';
+
+const GetBits = function (x: number) {
   // E.g. GetBits(13) === '1101'
   return x.toString(2);
 };
 
-const cycle = function* (items) {
+function* cycle<T>(items: Iterable<T>): IterableIterator<T> {
   while (true) {
     for (const item of items) {
       yield item;
@@ -21,7 +24,7 @@ const cycle = function* (items) {
   }
 };
 
-const firstNItems = function* (iterable, N) {
+function* firstNItems<T>(iterable: Iterable<T>, N: number): IterableIterator<T> {
   let numItemsYielded = 0;
   for (const item of iterable) {
     if (numItemsYielded >= N) {
@@ -32,18 +35,21 @@ const firstNItems = function* (iterable, N) {
   }
 };
 
-const getBitWidth = function (bitWidths) {
+const getBitWidth = function (bitWidths: IterableIterator<number>): number {
   const result = bitWidths.next();
 
   return result.done ? 0 : result.value;
 };
 
-const allOnesBitMask = function (numberOfOnes) {
+const allOnesBitMask = function (numberOfOnes: number): number {
   // e.g. allOnesBitMask(8) === 0b11111111 === 255
   return (1 << numberOfOnes) - 1;
 };
 
-export const intEncoder = function* (integers, uintBitWidths) {
+export const intEncoder = function* (
+    integers: Iterable<number>,
+    uintBitWidths: Iterable<number>,
+    ): IterableIterator<number> {
   // If uintBitWidths is an iterable that is not a container, e.g.
   // a once only iterator from a generator, it must yield the
   // same number of items or more, than the number of integers.
@@ -58,7 +64,7 @@ export const intEncoder = function* (integers, uintBitWidths) {
   let i = 0;
 
   for (const integer of integers) {
-    const bitWidth = getBitWidth(bitWidths, integer, i);
+    const bitWidth = getBitWidth(bitWidths);
 
     if (bitWidth === 0) {
       throw new Error(
@@ -92,7 +98,11 @@ export const intEncoder = function* (integers, uintBitWidths) {
   }
 };
 
-export const intDecoder = function* (encoded, numInts, uintBitWidths) {
+export function* intDecoder(
+    encoded: Iterable<number>,
+    numInts: number,
+    uintBitWidths: Iterable<number>,
+  ): IterableIterator<number> {
   // If uintBitWidths is an
   // iterable that is not a container, e.g.
   // a once only iterator from a generator, the total of all its
@@ -100,7 +110,6 @@ export const intDecoder = function* (encoded, numInts, uintBitWidths) {
   // i.e. as for int_encoder above, the caller must handle cacheing
   // of bit widths (or repeating them without cacheing).
   const bitWidths = firstNItems(cycle(uintBitWidths), numInts);
-  const bytes = encoded?.[Symbol.iterator]() || encoded;
 
   // Initialise a buffer (an ordinary Number)
   // and a bit counter.
@@ -110,9 +119,9 @@ export const intDecoder = function* (encoded, numInts, uintBitWidths) {
 
   let j = 0;
 
-  let uintBitWidth = getBitWidth(bitWidths, "'No bytes read yet. '", 0);
+  let uintBitWidth = getBitWidth(bitWidths);
 
-  for (const byte of bytes) {
+  for (const byte of encoded) {
     // Left shift 8 bits to make room for byte
     buffer <<= 8;
     // Bump counter by 8
@@ -136,7 +145,7 @@ export const intDecoder = function* (encoded, numInts, uintBitWidths) {
       // (the left most uintBitWidth bits)
       buffer &= allOnesBitMask(bufferWidthInBits);
 
-      uintBitWidth = getBitWidth(bitWidths, byte, i);
+      uintBitWidth = getBitWidth(bitWidths);
     }
 
     if (uintBitWidth === 0) {
@@ -153,7 +162,23 @@ export const intDecoder = function* (encoded, numInts, uintBitWidths) {
   }
 };
 
-const getBitWidthsEncodingsAndDecodings = function (valueSets) {
+type GenericEncoding<T extends string | number | symbol> = {
+  [key in T]: number;
+};
+
+// function createObject<T extends string | number | symbol>(): GenericObject<T> {
+//   const obj: any = {};
+//   return obj;
+// }
+
+// const example = createObject();
+// example.a = 42;
+// example.b = 100;
+
+
+function getBitWidthsEncodingsAndDecodings<T extends string | number | symbol>(
+      valueSets: T[][]): [number[], GenericEncoding<T>[], T[][]] {
+
   const bitWidths = [];
   const decodings = [];
   const encodings = [];
@@ -174,15 +199,17 @@ const getBitWidthsEncodingsAndDecodings = function (valueSets) {
     decodings.push(decoding);
 
     const encoding = Object.fromEntries(
-      decoding.entries().map(([i, s]) => [s, i]),
-    );
+      decoding.map((s, i) => [s, i]),
+    ) as GenericEncoding<T>;
     encodings.push(encoding);
   }
 
   return [bitWidths, encodings, decodings];
 };
 
-const mapSymbolsToIntegers = function* (symbols, encodings) {
+function* mapSymbolsToIntegers<T extends string | number | symbol>(
+    symbols: T[], encodings: {[key in T]: number}[]): IterableIterator<number> {
+
   const encodingsIterator = cycle(encodings);
 
   for (const symbol of symbols) {
@@ -191,7 +218,7 @@ const mapSymbolsToIntegers = function* (symbols, encodings) {
   }
 };
 
-const mapIntegersToSymbols = function* (integers, decodings) {
+function* mapIntegersToSymbols<T>(integers: Iterable<number>, decodings:T[][]): IterableIterator<T> {
   const decodingsIterator = cycle(decodings);
 
   for (const integer of integers) {
@@ -200,11 +227,11 @@ const mapIntegersToSymbols = function* (integers, decodings) {
   }
 };
 
-export const MakeSubByteEncoderAndDecoder = function (valueSets) {
+export function MakeSubByteEncoderAndDecoder<T extends string | number | symbol>(valueSets:T[][]) {
   const [bitWidths, encodings, decodings] =
-    getBitWidthsEncodingsAndDecodings(valueSets);
+    getBitWidthsEncodingsAndDecodings<T>(valueSets);
 
-  const encoder = function* (symbols) {
+  const encoder = function* (symbols: T[]) {
     for (const positiveInteger of intEncoder(
       mapSymbolsToIntegers(symbols, encodings),
       bitWidths,
@@ -213,7 +240,7 @@ export const MakeSubByteEncoderAndDecoder = function (valueSets) {
     }
   };
 
-  const decoder = function* (encoded, numSymbols) {
+  const decoder = function* (encoded: Iterable<number>, numSymbols: number) {
     const symbols = mapIntegersToSymbols(
       intDecoder(encoded, numSymbols, bitWidths),
       decodings,
