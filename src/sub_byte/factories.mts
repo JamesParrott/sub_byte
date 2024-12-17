@@ -9,9 +9,7 @@
 // 1 4 5 7 25 75 2 100 9 10
 
 
-declare module 'sub_byte';
-
-const GetBits = function (x: number) {
+const GetBits = function (x: number): string {
   // E.g. GetBits(13) === '1101'
   return x.toString(2);
 };
@@ -179,9 +177,9 @@ type GenericEncoding<T extends string | number | symbol> = {
 export function getBitWidthsEncodingsAndDecodings<T extends string | number | symbol>(
       valueSets: T[][]): [number[], GenericEncoding<T>[], T[][]] {
 
-  const bitWidths = [];
-  const decodings = [];
-  const encodings = [];
+  const bitWidths: number[] = [];
+  const decodings: T[][] = [];
+  const encodings: GenericEncoding<T>[] = [];
 
   for (const valueSet of valueSets) {
     const uniqueSymbols = new Set(valueSet);
