@@ -176,7 +176,7 @@ type GenericEncoding<T extends string | number | symbol> = {
 // example.b = 100;
 
 
-function getBitWidthsEncodingsAndDecodings<T extends string | number | symbol>(
+export function getBitWidthsEncodingsAndDecodings<T extends string | number | symbol>(
       valueSets: T[][]): [number[], GenericEncoding<T>[], T[][]] {
 
   const bitWidths = [];
