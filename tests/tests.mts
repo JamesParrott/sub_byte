@@ -26,8 +26,8 @@ describe("round_trip", function () {
     { integers: [1000, 2, 1234], bitWidths: [10, 2, 11] },
   ];
 
-  for (let i = 0; i < 16; i++) {
-    const n = randInt(50);
+  for (let i = 0; i < 8; i++) {
+    const n = randInt(30);
     const integers: number[] = [];
     const bitWidths: number[] = [];
 

@@ -1,7 +1,7 @@
 {
   "name": "sub_byte",
-  "version": "0.0.3",
-  "description": "Encodes and decodes sequences of integers with known widths, and sequences of symbols equivalent to integers under some mapping.",
+  "version": "0.0.4",
+  "description": "Encodes and decodes sequences of unsigned integers with known widths (and sequences of symbols from finite sets).",
   "main": "./src/sub_byte/factories.mts",
   "directories": {
     "test": "tests"
