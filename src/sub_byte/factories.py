@@ -66,17 +66,29 @@ def int_encoder(
 
 def int_decoder(
     encoded: Iterable[int],
-    num_ints: int,
+    num_ints: int | None,
     uint_bit_widths: Iterable[int]
 ) -> Iterator[int]:
-    """If uint_bit_widths is an
-    Iterable that is not a Container, e.g.
-    # a once only iterator from a generator, the total of all its
-    # widths yielded, must be >= (8 * the number of bytes from encoded)
-    # i.e. as for int_encoder above, the caller must handle cacheing
-    # of bit widths (or repeating them without cacheing).
+    """If uint_bit_widths is an Iterable that is not a Container, e.g.
+    a once only iterator from a generator, the total of all its
+    widths yielded, must be >= (8 * the number of bytes from encoded)
+    i.e. as for int_encoder above, the caller must handle caching
+    of bit widths (or repeating them without caching).
+    When iteration of the decoder terminates can be controlled by
+    by specifying the precise number of uints to decode, in num_ints.
+    encoded is always interpreted as whole bytes, so for example to decode
+    precisely 3 (and no more) 2-bit zeros (3* u2 0, or 3* 0b00) from a whole byte
+    (0b00000000), ignoring the last two bits, num_ints can be set to 3.
+    Alternatively, to support custom schemas, e.g. with dynamic data controlled 
+    bit widths, setting num_ints = None causes the int_decoder to decode uints
+    from encoded indefinitely.  In this case, the caller must terminate the 
+    (otherwise infinite) loop themselves.
     """
-    bit_widths = itertools.islice(itertools.cycle(uint_bit_widths), num_ints)
+    bit_widths = itertools.cycle(uint_bit_widths)
+
+    if num_ints is not None:
+        bit_widths = itertools.islice(bit_widths, num_ints)
+
     bytes_ = iter(encoded)
 
     # Initialise a buffer (an ordinary Number)
@@ -114,9 +126,10 @@ def int_decoder(
             bit_width = next(bit_widths, 0)
 
         if bit_width == 0:
-            if buffer_width_in_bits >= 1 and j < num_ints:
+            if num_ints is not None and buffer_width_in_bits >= 1 and j < num_ints:
                 raise Exception(
                     f"Not enough uint bit widths to decode remaining bits {buffer_width_in_bits} with.",
+                    f"Got: {num_ints=}.  Total ints decoded so far: {j=}. ", 
                 )
 
             break
