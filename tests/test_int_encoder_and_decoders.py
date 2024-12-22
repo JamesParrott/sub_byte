@@ -44,6 +44,6 @@ def test_roundtrip_py_int_encoder_and_decoder_num_ints_eq_None(ints, extra_width
 
 @pytest.mark.skip(reason="Flakey.  Sporadically hangs in CI. ")
 def test_JS_int_encoder_decoder_roundtrip_hardcoded_test_data():
-    output, result = _output_from_cmd("npm test")
+    output, result = _output_from_cmd("npm run test")
 
     assert result.returncode == 0, output

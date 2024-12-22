@@ -74,7 +74,7 @@ def int_decoder(
     widths yielded, must be >= (8 * the number of bytes from encoded)
     i.e. as for int_encoder above, the caller must handle caching
     of bit widths (or repeating them without caching).
-    When iteration of the decoder terminates can be controlled by
+    When iteration of the decoder terminates, can be controlled by
     by specifying the precise number of uints to decode, in num_ints.
     encoded is always interpreted as whole bytes, so for example to decode
     precisely 3 (and no more) 2-bit zeros (3* u2 0, or 3* 0b00) from a whole byte
