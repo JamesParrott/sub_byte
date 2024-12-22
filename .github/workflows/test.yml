@@ -20,17 +20,17 @@ jobs:
           "3.14.0-alpha.3",
         ]
         os: [
-          "macos-latest",
+          # "macos-latest",
           "ubuntu-24.04",
-          "windows-latest",
+          # "windows-latest",
         ]
         # include:
           # - os: ubuntu-24.04
           #   python-version: "3.14.0-alpha.3"
-          # - os: "macos-latest"
-          #   python-version: "3.13"
-          # - os: "windows-latest"
-          #   python-version: "3.13"
+          - os: "macos-latest"
+            python-version: "3.13"
+          - os: "windows-latest"
+            python-version: "3.13"
 
     runs-on: ${{ matrix.os }}
     steps:
