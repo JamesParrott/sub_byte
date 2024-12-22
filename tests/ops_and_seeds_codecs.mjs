@@ -1,7 +1,7 @@
 import SYMBOLS from "./symbols.json" with { type: "json" };
 // const SYMBOLS = await import('./symbols.json', { with: { type: "json" } });
 
-import { MakeSubByteEncoderAndDecoder } from "../src/sub_byte/factories.mjs";
+import { MakeSubByteEncoderAndDecoder } from "../src/sub_byte/factories.mts";
 
 const ALL_SEEDS = SYMBOLS.SEEDS;
 
