@@ -47,10 +47,12 @@ jobs:
     - name: Install code under test
       run: pip install -e .
 
-    - uses: actions/setup-node@v4
+    # - uses: actions/setup-node@v4
+    #   with:
+    #     node-version: 22.9.0
+    - uses: denoland/setup-deno@v2
       with:
-        node-version: 22.9.0
-
+        deno-version: v2.x
     - name: Show files in tests dir
       working-directory: tests
       shell: bash

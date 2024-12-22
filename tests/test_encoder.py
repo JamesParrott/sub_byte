@@ -113,6 +113,8 @@ RUN_PY = f"{sys.executable} -X utf8"
 # in node (ops_and_seeds_codecs.mjs imports symbols.json).
 RUN_NODE = "node --disable-warning ExperimentalWarning"
 
+RUN_DENO = "deno"
+
 
 @cli_encoder
 def py_encoder(args: str):
@@ -137,7 +139,7 @@ def py_seeds_decoder(
 
 @cli_encoder
 def js_encoder(args: str):
-    return f'{RUN_NODE} {PARENT_DIR / "encode.mjs"} {args}'
+    return f'{RUN_DENO} {PARENT_DIR / "encode.mjs"} {args}'
 
 
 @cli_decoder
@@ -145,7 +147,7 @@ def js_ops_decoder(
     encoded_ops: str,  # A hex string
     num_symbols: int,
 ):
-    return f'{RUN_NODE} {PARENT_DIR / "decode.mjs"} {num_symbols} {encoded_ops}'
+    return f'{RUN_DENO} {PARENT_DIR / "decode.mjs"} {num_symbols} {encoded_ops}'
 
 
 @cli_decoder
@@ -153,7 +155,7 @@ def js_seeds_decoder(
     encoded_seeds: str,  # A hex string
     num_symbols: int,
 ):
-    return f'{RUN_NODE} {PARENT_DIR / "decode.mjs"} {num_symbols} " " {encoded_seeds}'
+    return f'{RUN_DENO} {PARENT_DIR / "decode.mjs"} {num_symbols} " " {encoded_seeds}'
 
 
 @given(ops=op_strings_strategy)
