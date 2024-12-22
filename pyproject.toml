@@ -6,9 +6,9 @@ build-backend = "hatchling.build"
 name = "sub-byte"
 dynamic = ["version"]
 authors = [{name = "James Parrott", email = "james.parrott@proton.me"}]
-description = "Encodes and decodes sequences of integers with known widths, and sequences of symbols equivalent to integers under some mapping. "
+description = "Encodes and decodes sequences of unsigned integers with known widths (and sequences of symbols from finite sets). "
 readme = {file = "README.md", content-type = "text/markdown"}
-requires-python = ">=3.9"
+requires-python = ">=3.12" # For the new generic functions syntax.
 keywords = ["Encoders", "Serialization"]
 license = {file = "LICENSE.md"}
 classifiers = [
@@ -38,9 +38,13 @@ pattern = '"version": "(?P<version>\d+\.\d+\.\d+)",'
 [tool.hatch.build.targets.wheel]
 exclude = [
   "*.mjs",
+  "*.mts",
   "*.json",
   "*.js",
+  "*.jsx",
   "*.cjs",  
+  "*.ts",
+  "*.tsx",
 ]
 
 
