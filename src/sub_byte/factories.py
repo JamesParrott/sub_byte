@@ -84,7 +84,7 @@ def int_decoder(
     from encoded indefinitely.  In this case, the caller must terminate the 
     (otherwise infinite) loop themselves.
     """
-    bit_widths = itertools.cycle(uint_bit_widths)
+    bit_widths: Iterator[int] = itertools.cycle(uint_bit_widths)
 
     if num_ints is not None:
         bit_widths = itertools.islice(bit_widths, num_ints)
