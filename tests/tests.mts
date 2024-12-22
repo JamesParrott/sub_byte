@@ -1,10 +1,11 @@
-import { describe, it } from "node:test";
+// @ts-ignore
+import { describe, it } from "jsr:@std/testing/bdd";
+// @ts-ignore
+import { assertEquals } from "jsr:@std/assert";
 
-import assert from "node:assert";
+import { intEncoder, intDecoder } from "../src/sub_byte/factories.mts";
 
-import { intEncoder, intDecoder } from "../src/sub_byte/factories.mjs";
-
-function randInt(x) {
+function randInt(x: number): number {
   return Math.floor(Math.random() * x);
 }
 
@@ -27,8 +28,10 @@ describe("round_trip", function () {
 
   for (let i = 0; i < 16; i++) {
     const n = randInt(50);
-    const integers = [];
-    const bitWidths = [];
+    const integers: number[] = [];
+    const bitWidths: number[] = [];
+
+    // Homebrewed fuzz tester.
     for (let j = 0; j < n; j++) {
       const integer = randInt(1000000);
       const bitWidth = integer.toString(2).length + randInt(4);
@@ -44,7 +47,7 @@ describe("round_trip", function () {
       const N = integers.length;
       const encoded = Array.from(intEncoder(integers, bitWidths));
       const decoded = Array.from(intDecoder(encoded, N, bitWidths));
-      assert.deepEqual(decoded, integers);
+      assertEquals(decoded, integers);
     });
   });
 });

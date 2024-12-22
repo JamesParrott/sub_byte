@@ -46,9 +46,9 @@ jobs:
     - name: Install code under test
       run: pip install -e .
 
-    # - uses: actions/setup-node@v4
-    #   with:
-    #     node-version: 22.9.0
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22.9.0
     - uses: denoland/setup-deno@v2
       with:
         deno-version: v2.x
@@ -57,11 +57,11 @@ jobs:
       shell: bash
       run: ls -A
 
-    # - name: Install JS deps from npm
-    #   run: npm ci
+    - name: Install JS deps from npm
+      run: npm ci
 
-    # - name: Run JS tests
-    #   run: npm test
+    - name: Run JS tests
+      run: npm run test
 
     - name: Run Python tests (JS tested via CLI).
       working-directory: tests
