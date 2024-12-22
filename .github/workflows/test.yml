@@ -15,23 +15,22 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [
-          # "3.9",
-          # "3.10",
-          # "3.11",
           "3.12",
-          # "3.13",
+          "3.13",
+          "3.14.0-alpha.3",
         ]
         os: [
-          "macos-latest",
-          "ubuntu-latest",
-          # "ubuntu-24.04",
-          "windows-latest",
+          # "macos-latest",
+          "ubuntu-24.04",
+          # "windows-latest",
         ]
-        # include:
-        #   - os: ubuntu-24.04
-        #     python-version: "3.14.0-alpha.0"
-        #   - os: ubuntu-22.04
-        #     python-version: "3.14.0-alpha.0"
+        include:
+          # - os: ubuntu-24.04
+          #   python-version: "3.14.0-alpha.3"
+          - os: "macos-latest"
+            python-version: "3.13"
+          - os: "windows-latest"
+            python-version: "3.13"
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -62,7 +61,7 @@ jobs:
     #   run: npm ci
 
     # - name: Run JS tests
-    #   run: npm test
+    #   run: npm run test
 
     - name: Run Python tests (JS tested via CLI).
       working-directory: tests

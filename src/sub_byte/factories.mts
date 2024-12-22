@@ -98,16 +98,27 @@ export const intEncoder = function* (
 
 export function* intDecoder(
     encoded: Iterable<number>,
-    numInts: number,
+    numInts: number | null,
     uintBitWidths: Iterable<number>,
   ): IterableIterator<number> {
-  // If uintBitWidths is an
-  // iterable that is not a container, e.g.
+  // If uintBitWidths is an Iterable that is not a Container, e.g.
   // a once only iterator from a generator, the total of all its
   // widths yielded, must be >= (8 * the number of bytes from encoded)
-  // i.e. as for int_encoder above, the caller must handle cacheing
-  // of bit widths (or repeating them without cacheing).
-  const bitWidths = firstNItems(cycle(uintBitWidths), numInts);
+  // i.e. as for intEncoder above, the caller must handle caching
+  // of bit widths (or repeating them without caching).
+  // When iteration of the decoder terminates, can be controlled by
+  // by specifying the precise number of uints to decode, in numInts.
+  // encoded is always interpreted as whole bytes, so for example to decode
+  // precisely 3 (and no more) 2-bit zeros (3* u2 0, or 3* 0b00) from a whole byte
+  // (0b00000000), ignoring the last two bits, numInts can be set to 3.
+  // Alternatively, to support custom schemas, e.g. with dynamic data controlled 
+  // bit widths, setting numInts = null causes the intDecoder() to decode uints
+  // from encoded indefinitely.  In this case, the caller must terminate the 
+  // (otherwise infinite) loop themselves.
+  let bitWidths = cycle(uintBitWidths);
+  if (numInts !== null) {
+    bitWidths = firstNItems(bitWidths, numInts);
+  }
 
   // Initialise a buffer (an ordinary Number)
   // and a bit counter.
@@ -147,7 +158,7 @@ export function* intDecoder(
     }
 
     if (uintBitWidth === 0) {
-      if (bufferWidthInBits >= 1 && j < numInts) {
+      if (numInts !== null && bufferWidthInBits >= 1 && j < numInts) {
         throw new Error(
           `Not enough uint bit widths to decode remaining bits ${bufferWidthInBits} with.`,
         );
