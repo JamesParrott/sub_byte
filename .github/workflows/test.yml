@@ -24,7 +24,7 @@ jobs:
           "ubuntu-24.04",
           # "windows-latest",
         ]
-        # include:
+        include:
           # - os: ubuntu-24.04
           #   python-version: "3.14.0-alpha.3"
           - os: "macos-latest"
