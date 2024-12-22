@@ -59,7 +59,8 @@ def int_encoder(
     # Clear the buffer of any encoded integers, that were too few
     # to completely fill a whole byte.
     if bits_used >= 1:
-        # left shift the data to start from the highest order bits (no leading zeros)
+        # left shift the data to start of the bytes from the 
+        # highest order bits (no leading zeros)
         yield buffer << (8 - bits_used)
 
 
