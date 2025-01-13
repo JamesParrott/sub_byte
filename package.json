@@ -10,7 +10,8 @@
     "test": "deno test tests/tests.mts",
     "eslint": "eslint . --cache",
     "prettier": "prettier --check \"**/*.{js,msx,mjs,ts,tsx,mts,mtx}\"",
-    "prettier:write": "prettier --write \"**/*.{js,msx,mjs,ts,tsx,mts,mtx}\""
+    "prettier:write": "prettier --write \"**/*.{js,msx,mjs,ts,tsx,mts,mtx}\"",
+    "typecheck": "tsc --noEmit"
   },
   "files": [
     "./src/sub_byte/factories.mts"
@@ -32,6 +33,7 @@
   "homepage": "https://github.com/JamesParrott/sub_byte#readme",
   "devDependencies": {
     "@eslint/js": "^9.18.0",
+    "@types/node": "^22.10.5",
     "eslint": "^9.18.0",
     "fast-check": "^3.22.0",
     "globals": "^15.11.0",

@@ -59,7 +59,11 @@ Activate venv where deps installed
 pyright src/sub_byte/factories.py
 ```
 
-#### JS
+#### TS
+##### Typescipt compiler
+```shell
+npm run typecheck
+```
 ##### Eslint
 ```shell
 npm run eslint
