@@ -58,3 +58,20 @@ Activate venv where deps installed
 ```shell
 pyright src/sub_byte/factories.py
 ```
+
+#### JS
+##### Eslint
+```shell
+npm run eslint
+```
+
+##### Prettier
+###### Check
+```shell
+npm run prettier
+```
+
+###### Auto fix
+```shell
+npm run prettier:write
+```
