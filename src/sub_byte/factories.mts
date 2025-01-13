@@ -35,7 +35,6 @@ function* firstNItems<T>(iterable: Iterable<T>, N: number): IterableIterator<T> 
 
 const getBitWidth = function (bitWidths: IterableIterator<number>): number {
   const result = bitWidths.next();
-
   return result.done ? 0 : result.value;
 };
 
@@ -164,7 +163,7 @@ export function* intDecoder(
         );
       }
 
-      break;
+      break;  // the outer for/of loop 
     }
 
     i++;

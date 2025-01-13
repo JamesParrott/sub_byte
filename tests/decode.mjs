@@ -11,6 +11,8 @@ const Uint8ArrayFromHexStr = function (hexStr) {
     );
   }
   const numBytes = hexStr.length / 2;
+  // TODO:  Look into: Uint8Array.setFromHex
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array/setFromHex
   const encoded = new Uint8Array(numBytes);
   for (let i = 0; i < numBytes; i++) {
     const hexByte = hexStr.slice(2 * i, 2 * i + 2);
