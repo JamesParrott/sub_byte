@@ -1,7 +1,9 @@
 {
     "compilerOptions": {
-      "types": ["node", ],
+      "declaration": true,
+      "types": ["node" ],
       "target": "ESNext",
+      "outDir": "dist",
       "useDefineForClassFields": true,
       "lib": [ "ESNext"],
       "allowJs": false,
@@ -15,7 +17,6 @@
       "moduleResolution": "Node",
       "resolveJsonModule": true,
       "isolatedModules": true,
-      "noEmit": true,
       "paths": {
         "@/*": ["./src/sub_byte/factories.mts"],
       }

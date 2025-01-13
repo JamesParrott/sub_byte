@@ -1,8 +1,9 @@
 {
   "name": "sub_byte",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Encodes and decodes sequences of unsigned integers with known widths (and sequences of symbols from finite sets).",
-  "main": "./src/sub_byte/factories.mts",
+  "main": "./dist/factories.mjs",
+  "types": "./dist/factories.d.mts",
   "directories": {
     "test": "tests"
   },
@@ -11,10 +12,12 @@
     "eslint": "eslint . --cache",
     "prettier": "prettier --check \"**/*.{js,msx,mjs,ts,tsx,mts,mtx}\"",
     "prettier:write": "prettier --write \"**/*.{js,msx,mjs,ts,tsx,mts,mtx}\"",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublish": "tsc"
   },
   "files": [
-    "./src/sub_byte/factories.mts"
+    "./dist/factories.mjs",
+    "./dist/factories.d.mts"
   ],
   "repository": {
     "type": "git",

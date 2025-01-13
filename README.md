@@ -19,8 +19,18 @@ Data validation (e.g. checksums or hashes) must be done by the user, but an extr
 ### Python
 Calculate a cache of data in Python.
 
-### Javascript
+```shell
+uv pip install sub_byte
+```
+
+
+### Typescript/Javascript
 Decode a cache of data in Javascript, even in browser.
+
+```shell
+npm i sub_byte
+```
+
 
 ## Alternatives
 
