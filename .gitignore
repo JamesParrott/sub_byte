@@ -164,3 +164,4 @@ tests/pg100.txt
 /node_modules
 
 *.tgz
+.eslintcache
