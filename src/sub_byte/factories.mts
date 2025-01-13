@@ -8,7 +8,6 @@
 // >node --disable-warning ExperimentalWarning decode.mjs 10 " " 0346ac1d89
 // 1 4 5 7 25 75 2 100 9 10
 
-
 const GetBits = function (x: number): string {
   // E.g. GetBits(13) === '1101'
   return x.toString(2);
@@ -20,9 +19,12 @@ function* cycle<T>(items: Iterable<T>): IterableIterator<T> {
       yield item;
     }
   }
-};
+}
 
-function* firstNItems<T>(iterable: Iterable<T>, N: number): IterableIterator<T> {
+function* firstNItems<T>(
+  iterable: Iterable<T>,
+  N: number,
+): IterableIterator<T> {
   let numItemsYielded = 0;
   for (const item of iterable) {
     if (numItemsYielded >= N) {
@@ -31,7 +33,7 @@ function* firstNItems<T>(iterable: Iterable<T>, N: number): IterableIterator<T> 
     yield item;
     numItemsYielded++;
   }
-};
+}
 
 const getBitWidth = function (bitWidths: IterableIterator<number>): number {
   const result = bitWidths.next();
@@ -44,9 +46,9 @@ const allOnesBitMask = function (numberOfOnes: number): number {
 };
 
 export const intEncoder = function* (
-    integers: Iterable<number>,
-    uintBitWidths: Iterable<number>,
-    ): IterableIterator<number> {
+  integers: Iterable<number>,
+  uintBitWidths: Iterable<number>,
+): IterableIterator<number> {
   // If uintBitWidths is an iterable that is not a container, e.g.
   // a once only iterator from a generator, it must yield the
   // same number of items or more, than the number of integers.
@@ -96,10 +98,10 @@ export const intEncoder = function* (
 };
 
 export function* intDecoder(
-    encoded: Iterable<number>,
-    numInts: number | null,
-    uintBitWidths: Iterable<number>,
-  ): IterableIterator<number> {
+  encoded: Iterable<number>,
+  numInts: number | null,
+  uintBitWidths: Iterable<number>,
+): IterableIterator<number> {
   // If uintBitWidths is an Iterable that is not a Container, e.g.
   // a once only iterator from a generator, the total of all its
   // widths yielded, must be >= (8 * the number of bytes from encoded)
@@ -110,9 +112,9 @@ export function* intDecoder(
   // encoded is always interpreted as whole bytes, so for example to decode
   // precisely 3 (and no more) 2-bit zeros (3* u2 0, or 3* 0b00) from a whole byte
   // (0b00000000), ignoring the last two bits, numInts can be set to 3.
-  // Alternatively, to support custom schemas, e.g. with dynamic data controlled 
+  // Alternatively, to support custom schemas, e.g. with dynamic data controlled
   // bit widths, setting numInts = null causes the intDecoder() to decode uints
-  // from encoded indefinitely.  In this case, the caller must terminate the 
+  // from encoded indefinitely.  In this case, the caller must terminate the
   // (otherwise infinite) loop themselves.
   let bitWidths = cycle(uintBitWidths);
   if (numInts !== null) {
@@ -163,12 +165,12 @@ export function* intDecoder(
         );
       }
 
-      break;  // the outer for/of loop 
+      break; // the outer for/of loop
     }
 
     i++;
   }
-};
+}
 
 type GenericEncoding<T extends string | number | symbol> = {
   [key in T]: number;
@@ -183,10 +185,9 @@ type GenericEncoding<T extends string | number | symbol> = {
 // example.a = 42;
 // example.b = 100;
 
-
-export function getBitWidthsEncodingsAndDecodings<T extends string | number | symbol>(
-      valueSets: T[][]): [number[], GenericEncoding<T>[], T[][]] {
-
+export function getBitWidthsEncodingsAndDecodings<
+  T extends string | number | symbol,
+>(valueSets: T[][]): [number[], GenericEncoding<T>[], T[][]] {
   const bitWidths: number[] = [];
   const decodings: T[][] = [];
   const encodings: GenericEncoding<T>[] = [];
@@ -213,29 +214,35 @@ export function getBitWidthsEncodingsAndDecodings<T extends string | number | sy
   }
 
   return [bitWidths, encodings, decodings];
-};
+}
 
 function* mapSymbolsToIntegers<T extends string | number | symbol>(
-    symbols: T[], encodings: {[key in T]: number}[]): IterableIterator<number> {
-
+  symbols: T[],
+  encodings: { [key in T]: number }[],
+): IterableIterator<number> {
   const encodingsIterator = cycle(encodings);
 
   for (const symbol of symbols) {
     const encoding = encodingsIterator.next().value;
     yield encoding[symbol];
   }
-};
+}
 
-function* mapIntegersToSymbols<T>(integers: Iterable<number>, decodings:T[][]): IterableIterator<T> {
+function* mapIntegersToSymbols<T>(
+  integers: Iterable<number>,
+  decodings: T[][],
+): IterableIterator<T> {
   const decodingsIterator = cycle(decodings);
 
   for (const integer of integers) {
     const decoding = decodingsIterator.next().value;
     yield decoding[integer];
   }
-};
+}
 
-export function MakeSubByteEncoderAndDecoder<T extends string | number | symbol>(valueSets:T[][]) {
+export function MakeSubByteEncoderAndDecoder<
+  T extends string | number | symbol,
+>(valueSets: T[][]) {
   const [bitWidths, encodings, decodings] =
     getBitWidthsEncodingsAndDecodings<T>(valueSets);
 
@@ -259,4 +266,4 @@ export function MakeSubByteEncoderAndDecoder<T extends string | number | symbol>
   };
 
   return [encoder, decoder, bitWidths, encodings, decodings];
-};
+}

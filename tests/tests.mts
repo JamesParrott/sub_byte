@@ -27,7 +27,7 @@ describe("round_trip_fixed_and_random_test_data", function () {
   ];
 
   for (let i = 0; i < 8; i++) {
-    const n = 1+randInt(20);
+    const n = 1 + randInt(20);
     const integers: number[] = [];
     const bitWidths: number[] = [];
 
