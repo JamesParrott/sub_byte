@@ -1,6 +1,6 @@
 {
   "name": "sub_byte",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Encodes and decodes sequences of unsigned integers with known widths (and sequences of symbols from finite sets).",
   "main": "./dist/factories.mjs",
   "types": "./dist/factories.d.mts",
