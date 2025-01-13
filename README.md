@@ -1,13 +1,18 @@
 # Sub_Byte
 
-Encodes and decodes sequences of integers with known bit-widths (and sequences of symbols equivalent to integers under some mapping).
+Bit packer and depacker.  Encodes and decodes sequences of integers with known bit-widths (and sequences of symbols equivalent to integers under some mapping).
 
 ## Overview
 
-Sub Byte efficiently stores data, while preserving its structure, without requiring compression or decompression.  Simple bit packing, using less than a byte for <=7 bit fields, crossing byte 
-boundaries if necessary, utilising a known fixed bit width for each symbol (avoiding continuation bits).  The bit width sequence and the 
-total number of symbols, must be associated with the encoded data as meta data.
-Data validation (e.g. checksums or hashes) must be done by the user, but can be appended to a bit width cycle.
+Sub Byte stores data without wasting bits, while preserving its structure, without requiring compression or decompression.  Simple bit packing is used, supporting using less than a byte of storage for <=7 bit fields, crossing byte 
+boundaries if necessary.
+
+A bit width for each symbol is required.  The bit width sequence (a simple codec) can be associated with the encoded data as meta data.  The decoder can be passed the total number of symbols to decode (e.g. whether a null byte (0b00000000), is 8 1-bit zeros, 4 2-bit zeros, 2 u4 zeros or a single u8 zero).  
+
+Alternatively, more dynamic codecs can be supported by passing null for the number of symbols to the decoder.  Axtra custom code 
+must then be written by the user, to determine when iteration ceases.  This can be used e.g. to encode the actual bit widths first (in some other fixed bit widths), to encode the number of symbols or cycles, and to implement any other codec that determines bit widths, and termination of iteration, according to the user's code.
+
+Data validation (e.g. checksums or hashes) must be done by the user, but an extra field can easily be appended to a bit width cycle.
 
 ## Implementations
 
