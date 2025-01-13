@@ -9,7 +9,7 @@ function randInt(x: number): number {
   return Math.floor(Math.random() * x);
 }
 
-describe("round_trip", function () {
+describe("round_trip_fixed_and_random_test_data", function () {
   const tests = [
     { integers: [1, 2], bitWidths: [8] },
     {
@@ -27,7 +27,7 @@ describe("round_trip", function () {
   ];
 
   for (let i = 0; i < 8; i++) {
-    const n = randInt(20);
+    const n = 1+randInt(20);
     const integers: number[] = [];
     const bitWidths: number[] = [];
 

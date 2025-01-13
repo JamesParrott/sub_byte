@@ -20,13 +20,10 @@ jobs:
           "3.14.0-alpha.3",
         ]
         os: [
-          # "macos-latest",
           "ubuntu-24.04",
-          # "windows-latest",
         ]
         include:
-          # - os: ubuntu-24.04
-          #   python-version: "3.14.0-alpha.3"
+
           - os: "macos-latest"
             python-version: "3.13"
           - os: "windows-latest"
@@ -46,12 +43,11 @@ jobs:
     - name: Install code under test
       run: pip install -e .
 
-    # - uses: actions/setup-node@v4
-    #   with:
-    #     node-version: 22.9.0
+
     - uses: denoland/setup-deno@v2
       with:
         deno-version: v2.x
+
     - name: Show files in tests dir
       working-directory: tests
       shell: bash
@@ -63,6 +59,6 @@ jobs:
     - name: Run JS tests
       run: npm run test
 
-    # - name: Run Python tests (JS tested via CLI).
-    #   working-directory: tests
-    #   run: pytest
+    - name: Run Python tests (JS tested via CLI).
+      working-directory: tests
+      run: pytest
