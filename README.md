@@ -60,8 +60,19 @@ Configured npm module for Typescript.
 Support dynamic codecs (null/None number of elements to decode).
 
 ## Development
+### Dev env setup
+#### Python
+```shell
+uv pip install -e .[test,mypy]
+```
 
-### Type checking:
+#### Node
+```shell
+npm install
+```
+
+
+### Type checking and linting:
 #### Python
 ##### MyPy
 ```shell
@@ -90,7 +101,34 @@ npm run eslint
 npm run prettier
 ```
 
-###### Auto fix
+###### Prettier - auto fix
 ```shell
 npm run prettier:write
 ```
+
+### Publishing
+
+Bump version in package.json to x.y.z
+
+#### NPM
+```shell
+npm run prepublish
+npm pack
+```
+Double check contents of sub_byte-x.y.z.tgz
+
+```shell
+npm publish
+```
+Sign in (currently requires being the author).
+
+#### PyPi
+```shell
+uv build
+```
+Double check contents of dist/sub_byte-x.y.z.tar.gz
+
+```shell
+uv publish --token=%PYPI_API_KEY%
+```
+

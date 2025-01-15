@@ -1,6 +1,6 @@
 {
   "name": "sub_byte",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Encodes and decodes sequences of unsigned integers with known widths (and sequences of symbols from finite sets).",
   "main": "./dist/factories.mjs",
   "types": "./dist/factories.d.mts",
@@ -40,7 +40,9 @@
     "eslint": "^9.18.0",
     "fast-check": "^3.22.0",
     "globals": "^15.11.0",
-    "prettier": "3.3.3"
+    "prettier": "3.3.3",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.20.0"
   },
   "overrides": {
     "glob": "^11.0.0"
