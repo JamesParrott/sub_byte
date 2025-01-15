@@ -28,8 +28,8 @@ test = [
 ]
 
 [project.urls]   
-"Homepage" = "https://github.com/JamesParrott/sub_byte"
-"Bug Tracker" = "https://github.com/JamesParrott/sub_byte/issues"
+"Homepage" = "https://github.com/NumberzGame/sub_byte"
+"Bug Tracker" = "https://github.com/NumberzGame/sub_byte/issues"
 
 [tool.hatch.version]
 path = "package.json"
