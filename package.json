@@ -13,7 +13,8 @@
     "prettier": "prettier --check \"**/*.{js,msx,mjs,ts,tsx,mts,mtx}\"",
     "prettier:write": "prettier --write \"**/*.{js,msx,mjs,ts,tsx,mts,mtx}\"",
     "typecheck": "tsc --noEmit",
-    "prepublish": "tsc"
+    "prepublish": "tsc",
+    "dates.decode": "bun src/sub_byte/codecs/dates/decode/main.mjs"
   },
   "files": [
     "./dist/factories.mjs",
