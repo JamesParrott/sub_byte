@@ -11,7 +11,7 @@ BIT_WIDTHS = [(datetime.MAXYEAR - datetime.MINYEAR).bit_length(),
              ]
 
 
-def encoder(dates: Iterable[datetime.date])-> Iterator[bytes]:
+def encoder(dates: Iterable[datetime.date])-> Iterator[int]:
     for date in dates:
         yield from int_encoder([date.year - datetime.MINYEAR,
                                 date.month - 1,
