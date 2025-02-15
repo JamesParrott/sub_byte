@@ -4,17 +4,30 @@ from typing import Iterator, Iterable
 
 from sub_byte.factories import int_encoder, int_decoder
 
+# To avoid having to write special code for Javascript
+# for dates in the first century AD
+MIN_YEAR = 100
+# Because "Values from 0 to 99 map to the years 1900 to 1999. 
+# All other values are the actual year. "
+# Obviously.
+# https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date
 
-BIT_WIDTHS = [(datetime.MAXYEAR - datetime.MINYEAR).bit_length(),
-              (12 - 1).bit_length(),
-              (31 - 1).bit_length(),
+
+BIT_WIDTHS = [datetime.MAXYEAR.bit_length(),
+              (12).bit_length(),
+              (31).bit_length(),
              ]
 
 
-def encoder(dates: Iterable[datetime.date])-> Iterator[int]:
+def year_month_day_tuple_offsets_from_dates(dates: Iterable[datetime.date]) -> Iterator[int]:
     for date in dates:
-        yield from int_encoder([date.year - datetime.MINYEAR,
-                                date.month - 1,
-                                date.day - 1,
-                               ],
-                                BIT_WIDTHS)
+        yield date.year
+        yield date.month
+        yield date.day
+
+
+def encoder(dates: Iterable[datetime.date])-> Iterator[int]:
+    yield from int_encoder(
+            year_month_day_tuple_offsets_from_dates(dates),
+            BIT_WIDTHS,
+            )

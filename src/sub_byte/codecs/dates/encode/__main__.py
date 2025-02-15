@@ -7,7 +7,7 @@ from ..core import encoder
 
 def main(args = sys.argv[1:]):
     for encoded in encoder((datetime.date.fromisoformat(arg) for arg in args)):
-        print(f'{hex(encoded)[2:]} ',end='')
+        print(f'{hex(encoded)[2:].zfill(2)} ',end='')
     print()
 
     return 0
