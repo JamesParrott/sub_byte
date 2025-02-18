@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sub-byte"
-dynamic = ["version"]
+dynamic = ["version", "scripts"]
 authors = [{name = "James Parrott", email = "james.parrott@proton.me"}]
 description = "Encodes and decodes sequences of unsigned integers with known widths (and sequences of symbols from finite sets). "
 readme = {file = "README.md", content-type = "text/markdown"}
@@ -30,6 +30,9 @@ test = [
 [project.urls]   
 "Homepage" = "https://github.com/NumberzGame/sub_byte"
 "Bug Tracker" = "https://github.com/NumberzGame/sub_byte/issues"
+
+[tool.hatch.build.hooks.custom]
+path = "hatch_build.py"
 
 [tool.hatch.version]
 path = "package.json"
